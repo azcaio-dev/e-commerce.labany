@@ -23,8 +23,12 @@ function AdminProducts() {
   const [file1, setFile1] = useState(null)
   const [file2, setFile2] = useState(null)
   const [loading, setLoading] = useState(false)
+  const [brand, setBrand] = useState('')
+  const [category, setCategory] = useState('')
   const navigate = useNavigate()
   const formRef = useRef(null)
+  const brands = [...new Set(products.map((p) => p.brand).filter(Boolean))]
+  const categories = [...new Set(products.map((p) => p.category).filter(Boolean))]
  
   useEffect(() => {
   const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -87,9 +91,14 @@ function AdminProducts() {
 
   function handleEdit(product) {
     setEditingId(product.id)
-    setName(product.name)
-    setPrice(product.price)
+    setName(product.name || '')
+    setPrice(product.price || '')
     setDescription(product.description || '')
+    setBrand(product.brand || '')
+    setCategory(product.category || '')
+
+    setFile1(null)
+    setFile2(null)
 
     formRef.current?.scrollIntoView({
       behavior: 'smooth',
@@ -107,6 +116,8 @@ function AdminProducts() {
           name,
           price: Number(price),
           description,
+          brand,
+          category,
         }
 
         if (file1) {
@@ -136,6 +147,8 @@ function AdminProducts() {
           name,
           price: Number(price),
           description,
+          brand,
+          category,
           image: image1,
           image2,
           available: true,
@@ -190,6 +203,34 @@ function AdminProducts() {
           onChange={(e) => setPrice(e.target.value)}
           required
         />
+
+        <input
+          type="text"
+          placeholder="Marca"
+          list="brand-options"
+          value={brand}
+          onChange={(e) => setBrand(e.target.value)}
+        />
+
+        <datalist id="brand-options">
+          {brands.map((item) => (
+            <option key={item} value={item} />
+          ))}
+        </datalist>
+
+        <input
+          type="text"
+          placeholder="Tipo de roupa"
+          list="category-options"
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+        />
+
+        <datalist id="category-options">
+          {categories.map((item) => (
+            <option key={item} value={item} />
+          ))}
+        </datalist>
 
         <textarea
           placeholder="Descrição"

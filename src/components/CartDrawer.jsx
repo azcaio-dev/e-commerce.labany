@@ -47,21 +47,21 @@ function CartDrawer({ open, onClose }) {
           {cart.length === 0 && <p>Seu carrinho está vazio</p>}
 
           {cart.map((item) => (
-            <div key={item.id} className="cart-item">
-              <div className="cart-info">
-                <strong>{item.name}</strong>
-                <p>
-                  {item.quantity}x {item.price}
-                </p>
-              </div>
+           <div key={item.id} className="cart-item">
+            <img src={item.image} alt={item.name} className="cart-item-image" />
 
-              <button
-                className="remove-button"
-                onClick={() => removeFromCart(item.id)}
-              >
-                Remover
-              </button>
+            <div className="cart-info">
+              <strong>{item.name}</strong>
+              <p>{item.quantity}x {item.price}</p>
             </div>
+
+            <button
+              className="remove-button"
+              onClick={() => removeFromCart(item.id)}
+            >
+              Remover
+            </button>
+          </div>
           ))}
 
           {cart.length > 0 && (

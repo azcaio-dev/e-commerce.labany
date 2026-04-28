@@ -618,3 +618,86 @@ body {
   height: 24px;
   object-fit: contain;
 }
+
+.cart-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.cart-item-image {
+  width: 54px;
+  height: 72px;
+  object-fit: cover;
+  border-radius: 8px;
+  background: var(--color-secondary);
+}
+
+.cart-info {
+  flex: 1;
+}
+
+.menu-button {
+  position: absolute;
+  left: 16px;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.menu-icon {
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
+}
+
+.side-menu {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 82%;
+  max-width: 320px;
+  height: 100vh;
+  background: var(--color-white);
+  z-index: 120;
+  padding: 20px;
+  box-shadow: 4px 0 16px rgba(0, 0, 0, 0.12);
+}
+
+.close-menu {
+  position: absolute;
+  right: 14px;
+  top: 14px;
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.menu-section {
+  margin-top: 24px;
+}
+
+.menu-section h3 {
+  margin-bottom: 10px;
+}
+
+.menu-section button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 12px;
+  margin-bottom: 8px;
+  border: none;
+  border-radius: 12px;
+  background: var(--color-background);
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.menu-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  z-index: 110;
+}
