@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import CartDrawer from '../components/CartDrawer'
 import { collection, getDocs } from 'firebase/firestore'
 import { db } from '../services/firebase'
+import cartIcon from '../assets/cart.png'
 
 function Home() {
   const { cart, addToCart } = useCart()
@@ -33,7 +34,7 @@ function Home() {
         <img src={logo} alt="Logo Labany" className="logo" />
 
         <button className="cart-button" onClick={() => setOpenCart(true)}>
-          🛒
+          <img src={cartIcon} alt="Carrinho" className="cart-icon" />
           {cartQuantity > 0 && (
             <span className="cart-badge">{cartQuantity}</span>
           )}
