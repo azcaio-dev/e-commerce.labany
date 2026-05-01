@@ -3,45 +3,65 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { doc, getDoc } from 'firebase/firestore'
 import { db } from '../services/firebase'
 import { useCart } from '../context/CartContext'
+import CartDrawer from '../components/CartDrawer'
+import cartIcon from '../assets/cart.png'
 
 function ProductDetails() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { addToCart } = useCart()
-
+  const { cart, addToCart } = useCart()
   const [product, setProduct] = useState(null)
   const [loading, setLoading] = useState(true)
   const [selectedImage, setSelectedImage] = useState('')
+  const [selectedSize, setSelectedSize] = useState('')
+  const [openCart, setOpenCart] = useState(false)
+  const [added, setAdded] = useState(false)
+
+  const cartQuantity = cart.reduce((acc, item) => acc + item.quantity, 0)
 
   useEffect(() => {
     async function loadProduct() {
-      const productRef = doc(db, 'products', id)
-      const productSnap = await getDoc(productRef)
+      try {
+        const productRef = doc(db, 'products', id)
+        const productSnap = await getDoc(productRef)
 
-      if (productSnap.exists()) {
-        const data = {
-          id: productSnap.id,
-          ...productSnap.data(),
+        if (productSnap.exists()) {
+          const data = {
+            id: productSnap.id,
+            ...productSnap.data(),
+          }
+
+          setProduct(data)
+          setSelectedImage(data.image)
+        } else {
+          setProduct(null)
         }
-
-        setProduct(data)
-        setSelectedImage(data.image)
+      } catch (error) {
+        console.error(error)
+        setProduct(null)
+      } finally {
+        setLoading(false)
       }
-
-      setLoading(false)
     }
 
     loadProduct()
   }, [id])
 
   if (loading) {
-    return <p className="product-details">Carregando...</p>
+    return (
+      <main className="container product-loading">
+        <p>Carregando produto...</p>
+      </main>
+    )
   }
 
   if (!product) {
-    return <p className="product-details">Produto não encontrado</p>
+    return (
+      <main className="container product-empty">
+        <h2>Produto não encontrado</h2>
+      </main>
+    )
   }
-
   const formattedPrice = Number(product.price).toLocaleString('pt-BR', {
     style: 'currency',
     currency: 'BRL',
@@ -53,10 +73,20 @@ function ProductDetails() {
   )}`
 
   return (
-    <main className="product-details">
-      <button className="back-button" onClick={() => navigate(-1)}>
-        ← Voltar
-      </button>
+    <main className="product-details fade-in">
+      <header className="details-header">
+        <button className="details-back-button" onClick={() => navigate(-1)}>
+          ← Voltar
+        </button>
+
+        <button className="details-cart-button" onClick={() => setOpenCart(true)}>
+          <img src={cartIcon} alt="Carrinho" className="cart-icon" />
+
+          {cartQuantity > 0 && (
+            <span className="cart-badge">{cartQuantity}</span>
+          )}
+        </button>
+      </header>
 
       <section className="product-gallery">
         {/* IMAGEM PRINCIPAL */}
@@ -93,20 +123,50 @@ function ProductDetails() {
           <p>{product.description || 'Sem descrição cadastrada.'}</p>
         </div>
 
+        <div className="product-sizes">
+          <h3>Tamanhos disponíveis</h3>
+
+          <div className="size-options">
+            {product.sizes?.map((size) => (
+              <button
+                key={size}
+                className={selectedSize === size ? 'selected' : ''}
+                onClick={() => setSelectedSize(size)}
+              >
+                {size}
+              </button>
+            ))}
+          </div>
+        </div>
+
         <div className="product-actions">
           <button
-            className="add-cart-button"
+            className={`add-cart-button ${added ? 'added' : ''}`}
             disabled={!product.available}
             onClick={() => {
-              if (!product.available) return
+              if (!selectedSize) {
+                alert('Selecione um tamanho')
+                return
+              }
 
               addToCart({
                 ...product,
+                selectedSize,
                 price: formattedPrice,
               })
+
+              setAdded(true)
+
+              setTimeout(() => {
+                setAdded(false)
+              }, 1000)
             }}
           >
-            {product.available ? 'Adicionar' : 'Indisponível'}
+            {!product.available
+              ? 'Indisponível'
+              : added
+              ? '✔ Adicionado'
+              : 'Adicionar'}
           </button>
 
           {product.available && (
@@ -121,6 +181,7 @@ function ProductDetails() {
           )}
         </div>
       </section>
+      <CartDrawer open={openCart} onClose={() => setOpenCart(false)} />
     </main>
   )
 }

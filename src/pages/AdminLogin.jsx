@@ -15,7 +15,7 @@ function AdminLogin() {
 
     try {
       await signInWithEmailAndPassword(auth, email, password)
-      navigate('/admin/produtos')
+      navigate('/admin/dashboard')
     } catch {
       setError('E-mail ou senha inválidos')
     }

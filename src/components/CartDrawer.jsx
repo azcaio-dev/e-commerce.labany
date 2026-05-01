@@ -1,7 +1,12 @@
 import { useCart } from '../context/CartContext'
 
 function CartDrawer({ open, onClose }) {
-  const { cart, removeFromCart, clearCart } = useCart()
+  const {
+  cart,
+  clearCart,
+  increaseQuantity,
+  decreaseQuantity,
+} = useCart()
 
  const total = cart.reduce((acc, item) => {
   let price = item.price
@@ -27,7 +32,7 @@ function CartDrawer({ open, onClose }) {
     .map((item) => `${item.quantity}x ${item.name} - ${item.price}`)
     .join('\n')
 
-  const whatsappLink = `https://wa.me/5581999999999?text=${encodeURIComponent(
+  const whatsappLink = `https://wa.me/5581999706286?text=${encodeURIComponent(
     `Olá! Quero finalizar meu pedido:\n\n${message}\n\nTotal: ${total.toLocaleString(
       'pt-BR',
       { style: 'currency', currency: 'BRL' }
@@ -46,22 +51,35 @@ function CartDrawer({ open, onClose }) {
 
           {cart.length === 0 && <p>Seu carrinho está vazio</p>}
 
-          {cart.map((item) => (
-           <div key={item.id} className="cart-item">
-            <img src={item.image} alt={item.name} className="cart-item-image" />
-
-            <div className="cart-info">
-              <strong>{item.name}</strong>
-              <p>{item.quantity}x {item.price}</p>
-            </div>
-
-            <button
-              className="remove-button"
-              onClick={() => removeFromCart(item.id)}
+          {cart.map((item, index) => (
+            <div
+              key={`${item.id}-${item.selectedSize || 'sem-tamanho'}-${index}`}
+              className="cart-item"
             >
-              Remover
-            </button>
-          </div>
+              <img src={item.image} alt={item.name} className="cart-item-image" />
+
+              <div className="cart-info">
+                <strong className="cart-product-name">{item.name}</strong>
+
+                <div className="cart-middle-row">
+                  <span>Tam: {item.selectedSize || '-'}</span>
+
+                  <div className="cart-quantity">
+                    <button onClick={() => decreaseQuantity(item.id, item.selectedSize)}>
+                      −
+                    </button>
+
+                    <span>{item.quantity}</span>
+
+                    <button onClick={() => increaseQuantity(item.id, item.selectedSize)}>
+                      +
+                    </button>
+                  </div>
+                </div>
+
+                <p className="cart-price">{item.price}</p>
+              </div>
+            </div>
           ))}
 
           {cart.length > 0 && (

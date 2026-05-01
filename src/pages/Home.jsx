@@ -9,35 +9,112 @@ import menuIcon from '../assets/menu.png'
 
 function Home() {
   const { cart, addToCart } = useCart()
+
   const [openCart, setOpenCart] = useState(false)
   const [openMenu, setOpenMenu] = useState(false)
   const [products, setProducts] = useState([])
   const [filteredProducts, setFilteredProducts] = useState([])
+  const [addedId, setAddedId] = useState(null)
+  const [banners, setBanners] = useState([])
+  const [currentBanner, setCurrentBanner] = useState(0)
+  const [openBrands, setOpenBrands] = useState(false)
+  const [openCategories, setOpenCategories] = useState(false)
+  const [activeFilter, setActiveFilter] = useState(null)
+  const [scrolled, setScrolled] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [filterLabel, setFilterLabel] = useState('')
 
   const cartQuantity = cart.reduce((acc, item) => acc + item.quantity, 0)
 
- useEffect(() => {
+  useEffect(() => {
+    function handleScroll() {
+      setScrolled(window.scrollY > 20)
+    }
+
+    window.addEventListener('scroll', handleScroll)
+
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
+  useEffect(() => {
+    document.body.style.overflow = openMenu || openCart ? 'hidden' : 'auto'
+
+    return () => {
+      document.body.style.overflow = 'auto'
+    }
+  }, [openMenu, openCart])
+
+  useEffect(() => {
     async function loadProducts() {
-      const snapshot = await getDocs(collection(db, 'products'))
+      try {
+        const snapshot = await getDocs(collection(db, 'products'))
 
-      const data = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }))
+        const data = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }))
 
-      setProducts(data)
-      setFilteredProducts(data)
+        setProducts(data)
+        setFilteredProducts(data)
+      } catch (error) {
+        console.error(error)
+      } finally {
+        setLoading(false)
+      }
     }
 
     loadProducts()
   }, [])
 
-  const brands = [...new Set(products.map(p => p.brand).filter(Boolean))]
-  const categories = [...new Set(products.map(p => p.category).filter(Boolean))]
+  useEffect(() => {
+    async function loadBanners() {
+      try {
+        const snapshot = await getDocs(collection(db, 'banners'))
+
+        const data = snapshot.docs
+          .map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+          }))
+          .filter((banner) => banner.active)
+
+        setBanners(data)
+      } catch (error) {
+        console.error(error)
+      }
+    }
+
+    loadBanners()
+  }, [])
+
+  useEffect(() => {
+    if (banners.length <= 1) return
+
+    const interval = setInterval(() => {
+      setCurrentBanner((prev) => (prev + 1) % banners.length)
+    }, 3500)
+
+    return () => clearInterval(interval)
+  }, [banners])
+
+  const brands = [...new Set(products.map((p) => p.brand).filter(Boolean))]
+  const categories = [...new Set(products.map((p) => p.category).filter(Boolean))]
+
+  const launchProducts = products.filter(
+    (product) => product.productSection === 'launch' && product.available
+  )
+
+  const bestsellers = products.filter(
+    (product) => product.productSection === 'bestseller' && product.available
+  )
+
+  const outlet = products.filter(
+    (product) => product.productSection === 'outlet' && product.available
+  )
 
   return (
     <div>
-      <header className="header">
+      <header className={`header ${scrolled ? 'scrolled' : ''}`}>
         <button className="menu-button" onClick={() => setOpenMenu(true)}>
           <img src={menuIcon} alt="Menu" className="menu-icon" />
         </button>
@@ -46,6 +123,7 @@ function Home() {
 
         <button className="cart-button" onClick={() => setOpenCart(true)}>
           <img src={cartIcon} alt="Carrinho" className="cart-icon" />
+
           {cartQuantity > 0 && (
             <span className="cart-badge">{cartQuantity}</span>
           )}
@@ -53,96 +131,403 @@ function Home() {
       </header>
 
       <main className="container">
-        <section className="products-grid">
-          {filteredProducts.map((product) => (
-            <article
-              className={`product-card ${!product.available ? 'unavailable' : ''}`}
-              key={product.id}
-              onClick={() => window.location.href = `/produto/${product.id}`}
-            >
-              <div className="product-image-wrapper">
-                <img
-                  src={product.image}
-                  alt={product.name}
-                  className="product-image"
-                />
+        {loading && (
+          <section className="launch-section">
+            <h2>Carregando produtos...</h2>
 
-                {!product.available && (
-                  <span className="unavailable-badge">Indisponível</span>
+            <div className="launch-list">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="launch-card skeleton-card"></div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {!activeFilter && banners.length > 0 && (
+          <section className="banner-carousel fade-in">
+            <img
+              src={banners[currentBanner].image}
+              alt="Banner Loja Labany"
+              className="banner-image"
+            />
+
+            {banners.length > 1 && (
+              <div className="banner-dots">
+                {banners.map((banner, index) => (
+                  <button
+                    key={banner.id}
+                    className={index === currentBanner ? 'active' : ''}
+                    onClick={() => setCurrentBanner(index)}
+                  />
+                ))}
+              </div>
+            )}
+          </section>
+        )}
+
+        {!loading && !activeFilter && bestsellers.length > 0 && (
+          <section className="launch-section fade-in">
+            <h2>Mais vendidos</h2>
+
+            <div className="horizontal-wrapper">
+              <div className="launch-list">
+                {bestsellers.slice(0, 6).map((product) => (
+                  <article
+                    key={product.id}
+                    className="launch-card"
+                    onClick={() => (window.location.href = `/produto/${product.id}`)}
+                  >
+                    <img src={product.image} alt={product.name} />
+
+                    <div>
+                      <h3>{product.name}</h3>
+                      <p>
+                        {Number(product.price).toLocaleString('pt-BR', {
+                          style: 'currency',
+                          currency: 'BRL',
+                        })}
+                      </p>
+                    </div>
+                  </article>
+                ))}
+
+                {bestsellers.length > 6 && (
+                  <article
+                    className="see-more-card"
+                    onClick={() => {
+                      setFilteredProducts(
+                        products.filter((p) => p.productSection === 'bestseller')
+                      )
+                      setActiveFilter('bestseller')
+                      setFilterLabel('Mais vendidos')
+                      window.scrollTo({ top: 0, behavior: 'smooth' })
+                    }}
+                  >
+                    <span className="see-more-arrow">›</span>
+                  </article>
                 )}
               </div>
+            </div>
+          </section>
+        )}
 
-              <div className="product-info">
-                <h3>{product.name}</h3>
+        {!loading && !activeFilter && launchProducts.length > 0 && (
+          <section className="launch-section fade-in">
+            <h2>Lançamentos</h2>
 
-                <p>
-                  {Number(product.price).toLocaleString('pt-BR', {
-                    style: 'currency',
-                    currency: 'BRL',
-                  })}
-                </p>
+            <div className="horizontal-wrapper">
+              <div className="launch-list">
+                {launchProducts.slice(0, 6).map((product) => (
+                  <article
+                    key={product.id}
+                    className="launch-card"
+                    onClick={() => (window.location.href = `/produto/${product.id}`)}
+                  >
+                    <img src={product.image} alt={product.name} />
+
+                    <div>
+                      <h3>{product.name}</h3>
+                      <p>
+                        {Number(product.price).toLocaleString('pt-BR', {
+                          style: 'currency',
+                          currency: 'BRL',
+                        })}
+                      </p>
+                    </div>
+                  </article>
+                ))}
+
+                {launchProducts.length > 6 && (
+                  <article
+                    className="see-more-card"
+                    onClick={() => {
+                      setFilteredProducts(
+                        products.filter((p) => p.productSection === 'launch')
+                      )
+                      setActiveFilter('launch')
+                      setFilterLabel('Lançamentos')
+                      window.scrollTo({ top: 0, behavior: 'smooth' })
+                    }}
+                  >
+                    <span className="see-more-arrow">›</span>
+                  </article>
+                )}
               </div>
+            </div>
+          </section>
+        )}
 
+        {!loading && !activeFilter && outlet.length > 0 && (
+          <section className="launch-section fade-in">
+            <h2>Outlet</h2>
+
+            <div className="horizontal-wrapper">
+              <div className="launch-list">
+                {outlet.slice(0, 6).map((product) => (
+                  <article
+                    key={product.id}
+                    className="launch-card"
+                    onClick={() => (window.location.href = `/produto/${product.id}`)}
+                  >
+                    <img src={product.image} alt={product.name} />
+
+                    <div>
+                      <h3>{product.name}</h3>
+                      <p>
+                        {Number(product.price).toLocaleString('pt-BR', {
+                          style: 'currency',
+                          currency: 'BRL',
+                        })}
+                      </p>
+                    </div>
+                  </article>
+                ))}
+
+                {outlet.length > 6 && (
+                  <article
+                    className="see-more-card"
+                    onClick={() => {
+                      setFilteredProducts(
+                        products.filter((p) => p.productSection === 'outlet')
+                      )
+                      setActiveFilter('outlet')
+                      setFilterLabel('Outlet')
+                      window.scrollTo({ top: 0, behavior: 'smooth' })
+                    }}
+                  >
+                    <span className="see-more-arrow">›</span>
+                  </article>
+                )}
+              </div>
+            </div>
+          </section>
+        )}
+
+        {activeFilter ? (
+          <>
+           <h2 className="section-title">
+            {filterLabel || 'Resultados'}
+          </h2>
+
+            <section className="products-grid fade-in">
+              {filteredProducts.length > 0 ? (
+                filteredProducts.map((product) => (
+                  <article
+                    className={`product-card ${!product.available ? 'unavailable' : ''}`}
+                    key={product.id}
+                    onClick={() => (window.location.href = `/produto/${product.id}`)}
+                  >
+                    <div className="product-image-wrapper">
+                      <img
+                        src={product.image}
+                        alt={product.name}
+                        className="product-image"
+                      />
+
+                      {!product.available && (
+                        <span className="unavailable-badge">Indisponível</span>
+                      )}
+                    </div>
+
+                    <div className="product-info">
+                      <h3>{product.name}</h3>
+
+                      <p>
+                        {Number(product.price).toLocaleString('pt-BR', {
+                          style: 'currency',
+                          currency: 'BRL',
+                        })}
+                      </p>
+                    </div>
+
+                    <button
+                      className={`add-cart-button ${
+                        addedId === product.id ? 'added' : ''
+                      }`}
+                      disabled={product.available === false}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        if (!product.available) return
+
+                        addToCart(product)
+                        setAddedId(product.id)
+
+                        setTimeout(() => {
+                          setAddedId(null)
+                        }, 1000)
+                      }}
+                    >
+                      {!product.available
+                        ? 'Indisponível'
+                        : addedId === product.id
+                        ? '✔ Adicionado'
+                        : '+ Carrinho'}
+                    </button>
+                  </article>
+                ))
+              ) : (
+                <div className="empty-products">
+                  <p>Nenhum produto encontrado.</p>
+                </div>
+              )}
+            </section>
+          </>
+        ) : (
+          !loading && (
+            <div className="view-all-wrapper fade-in">
               <button
-                className="add-cart-button"
-                disabled={product.available === false}
-                onClick={(e) => {
-                  e.stopPropagation()
-                  if (!product.available) return
-                  addToCart(product)
-                }}
+                className="view-all-products"
+                onClick={() => (window.location.href = '/produtos')}
               >
-                {product.available ? '+ Carrinho' : 'Indisponível'}
+                Ver todos os produtos
               </button>
-            </article>
-          ))}
-        </section>
+            </div>
+          )
+        )}
       </main>
 
       <CartDrawer open={openCart} onClose={() => setOpenCart(false)} />
-        {openMenu && (
-          <>
-            <div className="side-menu">
-              <button className="close-menu" onClick={() => setOpenMenu(false)}>
-                ✕
-              </button>
 
-              <h2>Filtros</h2>
+      <div className={`side-menu ${openMenu ? 'open' : ''}`}>
+        <button className="close-menu" onClick={() => setOpenMenu(false)}>
+          ✕
+        </button>
 
-              <div className="menu-section">
-                <h3>Marcas</h3>
-                {brands.map((brand) => (
-                  <button
-                    key={brand}
-                    onClick={() => {
-                      setFilteredProducts(products.filter(p => p.brand === brand))
-                      setOpenMenu(false)
-                    }}
-                  >
-                    {brand}
-                  </button>
-                ))}
-              </div>
+        <nav className="menu-list">
+          <button
+            className="menu-link"
+            onClick={() => {
+              setFilteredProducts(products)
+              setActiveFilter(null)
+              setFilterLabel('')
+              setOpenMenu(false)
+            }}
+          >
+            Home
+          </button>
 
-              <div className="menu-section">
-                <h3>Tipo de roupa</h3>
-                {categories.map((cat) => (
-                  <button
-                    key={cat}
-                    onClick={() => {
-                      setFilteredProducts(products.filter(p => p.category === cat))
-                      setOpenMenu(false)
-                    }}
-                  >
-                    {cat}
-                  </button>
-                ))}
-              </div>
+          <button
+            className="menu-link"
+            onClick={() => {
+              window.location.href = '/produtos'
+            }}
+          >
+            Todos os produtos
+          </button>
+
+          <button
+            className="menu-link"
+            onClick={() => {
+              const filtered = products.filter(
+                (p) => p.productSection === 'launch'
+              )
+
+              setFilteredProducts(filtered)
+              setActiveFilter('launch')
+              setFilterLabel('Lançamentos')
+              setOpenMenu(false)
+            }}
+          >
+            Lançamentos
+          </button>
+
+          <button
+            className="menu-link"
+            onClick={() => {
+              const filtered = products.filter(
+                (p) => p.productSection === 'bestseller'
+              )
+
+              setFilteredProducts(filtered)
+              setActiveFilter('bestseller')
+              setFilterLabel('Mais vendidos')
+              setOpenMenu(false)
+            }}
+          >
+            Mais vendidos
+          </button>
+
+          <button
+            className="menu-link"
+            onClick={() => {
+              const filtered = products.filter(
+                (p) => p.productSection === 'outlet'
+              )
+
+              setFilteredProducts(filtered)
+              setActiveFilter('outlet')
+              setFilterLabel('Outlet')
+              setOpenMenu(false)
+            }}
+          >
+            Outlet
+          </button>
+
+          <button
+            className="menu-link"
+            onClick={() => setOpenBrands(!openBrands)}
+          >
+            <span>Marcas</span>
+            <span>›</span>
+          </button>
+
+          {openBrands && (
+            <div className="submenu">
+              {brands.map((brand) => (
+                <button
+                  key={brand}
+                  onClick={() => {
+                    const filtered = products.filter(
+                      (p) => p.brand === brand
+                    )
+
+                    setFilteredProducts(filtered)
+                    setActiveFilter('brand')
+                    setFilterLabel(`Marca > ${brand}`)
+                    setOpenMenu(false)
+                  }}
+                >
+                  {brand}
+                </button>
+              ))}
             </div>
+          )}
 
-            <div className="menu-overlay" onClick={() => setOpenMenu(false)}></div>
-          </>
-        )}
+          <button
+            className="menu-link"
+            onClick={() => setOpenCategories(!openCategories)}
+          >
+            <span>Peças</span>
+            <span>›</span>
+          </button>
+
+          {openCategories && (
+            <div className="submenu">
+              {categories.map((cat) => (
+                <button
+                  key={cat}
+                  onClick={() => {
+                    const filtered = products.filter(
+                      (p) => p.category === cat
+                    )
+
+                    setFilteredProducts(filtered)
+                    setActiveFilter('category')
+                    setFilterLabel(`Peças > ${cat}`)
+                    setOpenMenu(false)
+                  }}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+          )}
+        </nav>
+      </div>
+
+      {openMenu && (
+        <div className="menu-overlay" onClick={() => setOpenMenu(false)}></div>
+      )}
     </div>
   )
 }

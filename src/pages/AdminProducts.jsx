@@ -12,7 +12,6 @@ import { onAuthStateChanged } from 'firebase/auth'
 import { useNavigate } from 'react-router-dom'
 import { auth } from '../services/firebase'
 
-
 function AdminProducts() {
   const [products, setProducts] = useState([])
   const [editingId, setEditingId] = useState(null)
@@ -25,20 +24,43 @@ function AdminProducts() {
   const [loading, setLoading] = useState(false)
   const [brand, setBrand] = useState('')
   const [category, setCategory] = useState('')
+  const [productSection, setProductSection] = useState('')
+  const [sizeType, setSizeType] = useState('letter')
+  const [sizes, setSizes] = useState([])
+
   const navigate = useNavigate()
   const formRef = useRef(null)
+
   const brands = [...new Set(products.map((p) => p.brand).filter(Boolean))]
   const categories = [...new Set(products.map((p) => p.category).filter(Boolean))]
- 
-  useEffect(() => {
-  const unsubscribe = onAuthStateChanged(auth, (user) => {
-    if (!user) {
-      navigate('/admin')
-    }
-  })
 
-  return () => unsubscribe()
-}, [navigate])
+  const letterSizes = ['PP', 'P', 'M', 'G', 'GG', 'XG']
+  const numberSizes = ['34', '36', '38', '40', '42', '44', '46']
+
+  const sizeOptions =
+    sizeType === 'letter'
+      ? letterSizes
+      : sizeType === 'number'
+      ? numberSizes
+      : ['Tamanho único']
+
+  function toggleSize(size) {
+    setSizes((prev) =>
+      prev.includes(size)
+        ? prev.filter((item) => item !== size)
+        : [...prev, size]
+    )
+  }
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        navigate('/admin')
+      }
+    })
+
+    return () => unsubscribe()
+  }, [navigate])
 
   async function loadProducts() {
     const snapshot = await getDocs(collection(db, 'products'))
@@ -51,13 +73,21 @@ function AdminProducts() {
     setProducts(data)
   }
 
- useEffect(() => {
+  useEffect(() => {
   async function fetchProducts() {
-    await loadProducts()
+    const snapshot = await getDocs(collection(db, 'products'))
+
+    const data = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }))
+
+    setProducts(data)
   }
 
   fetchProducts()
 }, [])
+
   const uploadImage = async (file) => {
     const formData = new FormData()
     formData.append('file', file)
@@ -87,6 +117,11 @@ function AdminProducts() {
     setFile1(null)
     setFile2(null)
     setEditingId(null)
+    setBrand('')
+    setCategory('')
+    setProductSection('')
+    setSizeType('letter')
+    setSizes([])
   }
 
   function handleEdit(product) {
@@ -96,6 +131,9 @@ function AdminProducts() {
     setDescription(product.description || '')
     setBrand(product.brand || '')
     setCategory(product.category || '')
+    setProductSection(product.productSection || '')
+    setSizeType(product.sizeType || 'letter')
+    setSizes(product.sizes || [])
 
     setFile1(null)
     setFile2(null)
@@ -108,6 +146,12 @@ function AdminProducts() {
 
   async function handleSubmit(e) {
     e.preventDefault()
+
+    if (sizes.length === 0) {
+      alert('Selecione pelo menos um tamanho')
+      return
+    }
+
     setLoading(true)
 
     try {
@@ -118,16 +162,17 @@ function AdminProducts() {
           description,
           brand,
           category,
+          productSection,
+          sizeType,
+          sizes,
         }
 
         if (file1) {
-          const newImage1 = await uploadImage(file1)
-          updatedData.image = newImage1
+          updatedData.image = await uploadImage(file1)
         }
 
         if (file2) {
-          const newImage2 = await uploadImage(file2)
-          updatedData.image2 = newImage2
+          updatedData.image2 = await uploadImage(file2)
         }
 
         await updateDoc(doc(db, 'products', editingId), updatedData)
@@ -149,6 +194,9 @@ function AdminProducts() {
           description,
           brand,
           category,
+          productSection,
+          sizeType,
+          sizes,
           image: image1,
           image2,
           available: true,
@@ -232,6 +280,32 @@ function AdminProducts() {
           ))}
         </datalist>
 
+        <select
+          value={sizeType}
+          onChange={(e) => {
+            setSizeType(e.target.value)
+            setSizes(e.target.value === 'unique' ? ['Tamanho único'] : [])
+          }}
+        >
+          <option value="letter">Tamanho por letra</option>
+          <option value="number">Tamanho por número</option>
+          <option value="unique">Tamanho único</option>
+        </select>
+
+        <div className="sizes-box">
+          {sizeOptions.map((size) => (
+            <label key={size} className="size-checkbox">
+              <input
+                type="checkbox"
+                checked={sizes.includes(size)}
+                onChange={() => toggleSize(size)}
+                disabled={sizeType === 'unique'}
+              />
+              {size}
+            </label>
+          ))}
+        </div>
+
         <textarea
           placeholder="Descrição"
           value={description}
@@ -254,6 +328,43 @@ function AdminProducts() {
           onChange={(e) => setFile2(e.target.files[0])}
           required={!editingId}
         />
+
+        <div className="product-section-box">
+          <p>Seção do produto</p>
+
+          <label className="checkbox-label">
+            <input
+              type="radio"
+              name="productSection"
+              value="launch"
+              checked={productSection === 'launch'}
+              onChange={(e) => setProductSection(e.target.value)}
+            />
+            Lançamento
+          </label>
+
+          <label className="checkbox-label">
+            <input
+              type="radio"
+              name="productSection"
+              value="outlet"
+              checked={productSection === 'outlet'}
+              onChange={(e) => setProductSection(e.target.value)}
+            />
+            Outlet
+          </label>
+
+          <label className="checkbox-label">
+            <input
+              type="radio"
+              name="productSection"
+              value="bestseller"
+              checked={productSection === 'bestseller'}
+              onChange={(e) => setProductSection(e.target.value)}
+            />
+            Mais vendidos
+          </label>
+        </div>
 
         <button type="submit" disabled={loading}>
           {loading
@@ -293,9 +404,7 @@ function AdminProducts() {
                 {product.available ? 'Desativar' : 'Ativar'}
               </button>
 
-              <button onClick={() => handleDelete(product.id)}>
-                Excluir
-              </button>
+              <button onClick={() => handleDelete(product.id)}>Excluir</button>
             </div>
           </div>
         ))}
