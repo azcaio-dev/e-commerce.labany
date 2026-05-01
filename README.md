@@ -1,64 +1,96 @@
-# 🛍️ E-commerce Labany
+# 🛍️ E-commerce de Moda Premium
 
-Projeto completo de e-commerce responsivo, com foco em mobile e painel administrativo para gestão de produtos.
+Projeto de e-commerce desenvolvido com foco em experiência de usuário, navegação fluida e conversão via WhatsApp.
 
----
-
-## 🚀 Funcionalidades
-
-### 🛒 Loja
-- Feed de produtos em layout de 2 colunas
-- Página de detalhes com galeria de imagens
-- Carrinho de compras funcional
-- Finalização via WhatsApp
-- Produtos indisponíveis com destaque visual
-
-### 🔒 Admin
-- Login com Firebase Authentication
-- Proteção de rotas
-- Cadastro de produtos
-- Upload de imagens (Cloudinary)
-- Edição de produtos (incluindo imagens)
-- Exclusão de produtos
-- Ativar / desativar produtos
+A aplicação simula uma loja de roupas de alto padrão, priorizando organização dos produtos, facilidade de navegação e agilidade no atendimento.
 
 ---
 
-## 📱 Interface
+## 🚀 Tecnologias utilizadas
 
-### 🔐 Login Admin
-![Login](./assets/login.jpeg)
-
----
-
-### 📦 Cadastro de Produto
-![Cadastro](./assets/cadastro.produto.jpeg)
-
----
-
-### 📋 Lista de Produtos (Admin)
-![Lista](./assets/lista.cadastrados.jpeg)
-
----
-
-### 🛍️ Home (Loja)
-![Home](./assets/home.jpeg)
-
----
-
-### 👗 Detalhe do Produto
-![Produto](./assets/detalhe.produto.jpeg)
-
----
-
-### 🛒 Carrinho
-![Carrinho](./assets/carrinho.jpeg)
-
----
-
-## 🧪 Tecnologias
-
-- React (Vite)
-- Firebase (Authentication + Firestore)
-- Cloudinary (upload de imagens)
+- React
+- React Router
+- Firebase (Firestore)
+- Context API (Gerenciamento de estado)
 - CSS puro
+
+---
+
+## 💡 Funcionalidades
+
+- 🏠 Página inicial com:
+  - Banner rotativo
+  - Seções de:
+    - Mais vendidos
+    - Lançamentos
+    - Outlet
+
+- 🔍 Filtros dinâmicos:
+  - Por categoria (peças)
+  - Por marca
+  - Por seções (lançamentos, outlet, mais vendidos)
+  - Título dinâmico conforme filtro selecionado
+
+- 📦 Página de produtos:
+  - Grid completo
+  - Modal para seleção de tamanho antes de adicionar ao carrinho
+
+- 🛒 Carrinho de compras:
+  - Controle de quantidade
+  - Cálculo automático de total
+  - Finalização via WhatsApp com mensagem pronta
+
+- 📲 Página de produto:
+  - Seleção de tamanho obrigatória
+  - Botão de compra via WhatsApp
+  - Interface focada em conversão
+
+- 📱 UX aprimorada:
+  - Header fixo com redução ao scroll
+  - Menu lateral responsivo
+  - Feedback visual nas ações
+  - Navegação fluida (SPA)
+
+---
+
+## 🎯 Objetivo do projeto
+
+Este projeto foi desenvolvido com dois principais objetivos:
+
+1. Prática e evolução técnica no desenvolvimento front-end
+2. Criação de uma solução real para lojas que vendem via Instagram e WhatsApp, melhorando:
+   - Organização dos produtos
+   - Experiência do cliente
+   - Conversão de vendas
+
+---
+
+## 💰 Modelo de negócio aplicado
+
+O projeto foi pensado para ser oferecido como solução para pequenos e médios negócios, com:
+
+- Baixo custo inicial
+- Mensalidade acessível
+- Integração direta com WhatsApp (sem necessidade de gateway de pagamento)
+
+---
+
+## 🧠 Aprendizados
+
+- Construção de interfaces focadas em conversão
+- Gerenciamento de estado com Context API
+- Estruturação de navegação em SPA
+- Integração com Firebase
+- Pensamento de produto e experiência do usuário
+
+---
+
+## 📌 Status do projeto
+
+🚧 Em evolução — novas melhorias e refinamentos sendo adicionados continuamente.
+
+---
+
+## 👨‍💻 Autor
+
+Caio Lima
