@@ -148,7 +148,15 @@ function Home() {
             src="/logoo.png"
             alt="LABANY"
             className="logo"
-            onClick={() => navigate('/')}
+            onClick={() => {
+              setFilteredProducts(products)
+              setActiveFilter(null)
+              setFilterLabel('')
+              setSearchTerm('')
+              setOpenSearch(false)
+              window.scrollTo({ top: 0, behavior: 'smooth' })
+              navigate('/')
+            }}
           />
         </div>
 
