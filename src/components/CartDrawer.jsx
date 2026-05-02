@@ -28,15 +28,26 @@ function CartDrawer({ open, onClose }) {
   return acc + item.quantity * price
 }, 0)
 
-  const message = cart
-    .map((item) => `${item.quantity}x ${item.name} - ${item.price}`)
-    .join('\n')
+ const message = cart
+    .map(
+      (item) => `• ${item.quantity}x ${item.name}
+  Tam: ${item.selectedSize || '-'}
+  R$: ${item.price}`
+    )
+    .join('\n\n')
 
   const whatsappLink = `https://wa.me/5581999706286?text=${encodeURIComponent(
-    `Olá! Quero finalizar meu pedido:\n\n${message}\n\nTotal: ${total.toLocaleString(
-      'pt-BR',
-      { style: 'currency', currency: 'BRL' }
-    )}`
+    `Olá! Quero finalizar meu pedido:
+
+  *Itens:*
+  ${message}
+--------------------------------------
+  *Total:* ${total.toLocaleString('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+    })}
+
+  Pode me ajudar com o pagamento e entrega?`
   )}`
 
   return (

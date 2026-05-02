@@ -6,6 +6,8 @@ import { collection, getDocs } from 'firebase/firestore'
 import { db } from '../services/firebase'
 import cartIcon from '../assets/cart.png'
 import menuIcon from '../assets/menu.png'
+import lupaIcon from '../assets/lupa.png'
+import SearchPanel from '../components/SearchPanel'
 
 function Home() {
   const { cart, addToCart } = useCart()
@@ -23,6 +25,8 @@ function Home() {
   const [scrolled, setScrolled] = useState(false)
   const [loading, setLoading] = useState(true)
   const [filterLabel, setFilterLabel] = useState('')
+  const [openSearch, setOpenSearch] = useState(false)
+  const [searchTerm, setSearchTerm] = useState('')
 
   const cartQuantity = cart.reduce((acc, item) => acc + item.quantity, 0)
 
@@ -115,22 +119,46 @@ function Home() {
   return (
     <div>
       <header className={`header ${scrolled ? 'scrolled' : ''}`}>
-        <button className="menu-button" onClick={() => setOpenMenu(true)}>
-          <img src={menuIcon} alt="Menu" className="menu-icon" />
-        </button>
+        <div className="header-left">
+          <button className="menu-button" onClick={() => setOpenMenu(true)}>
+            <img src={menuIcon} alt="Menu" className="menu-icon" />
+          </button>
 
-        <img src={logo} alt="Logo Labany" className="logo" />
+          <button
+            className="search-button"
+            onClick={() => setOpenSearch(!openSearch)}
+          >
+            <img src={lupaIcon} alt="Buscar" className="search-icon" />
+          </button>
+        </div>
 
-        <button className="cart-button" onClick={() => setOpenCart(true)}>
-          <img src={cartIcon} alt="Carrinho" className="cart-icon" />
+        <div className="header-center">
+          <img src={logo} alt="Logo" className="logo" />
+        </div>
 
-          {cartQuantity > 0 && (
-            <span className="cart-badge">{cartQuantity}</span>
-          )}
-        </button>
+        <div className="header-right">
+          <button className="cart-button" onClick={() => setOpenCart(true)}>
+            <img src={cartIcon} alt="Carrinho" className="cart-icon" />
+
+            {cartQuantity > 0 && (
+              <span className="cart-badge">{cartQuantity}</span>
+            )}
+          </button>
+        </div>
       </header>
 
+      <SearchPanel
+        openSearch={openSearch}
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
+        products={products}
+        setFilteredProducts={setFilteredProducts}
+        setActiveFilter={setActiveFilter}
+        setFilterLabel={setFilterLabel}
+      />
+
       <main className="container">
+        <div className={openSearch ? "search-open" : ""}></div>
         {loading && (
           <section className="launch-section">
             <h2>Carregando produtos...</h2>

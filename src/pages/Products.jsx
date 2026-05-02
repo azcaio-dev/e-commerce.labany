@@ -8,10 +8,12 @@ import CartDrawer from '../components/CartDrawer'
 import { useCart } from '../context/CartContext'
 import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
+import lupaIcon from '../assets/lupa.png'
+import SearchPanel from '../components/SearchPanel'
 
 function Products() {
   const { cart, addToCart } = useCart()
-
+  const [scrolled, setScrolled] = useState(false)
   const [products, setProducts] = useState([])
   const [filteredProducts, setFilteredProducts] = useState([])
   const [loading, setLoading] = useState(true)
@@ -26,8 +28,21 @@ function Products() {
   const [selectedSize, setSelectedSize] = useState('')
   const [filterLabel, setFilterLabel] = useState('')
   const navigate = useNavigate()
+  const [visibleCount, setVisibleCount] = useState(10)
+  const [openSearch, setOpenSearch] = useState(false)
+  const [searchTerm, setSearchTerm] = useState('')
 
   const cartQuantity = cart.reduce((acc, item) => acc + item.quantity, 0)
+
+  useEffect(() => {
+  function handleScroll() {
+    setScrolled(window.scrollY > 20)
+  }
+
+  window.addEventListener('scroll', handleScroll)
+
+  return () => window.removeEventListener('scroll', handleScroll)
+}, [])
 
   useEffect(() => {
     document.body.style.overflow = openMenu || openCart ? 'hidden' : 'auto'
@@ -64,26 +79,44 @@ function Products() {
 
   return (
     <div>
-      <header className="header">
-        <button className="menu-button" onClick={() => setOpenMenu(true)}>
-          <img src={menuIcon} alt="Menu" className="menu-icon" />
-        </button>
+      <header className={`header ${scrolled ? 'scrolled' : ''}`}>
+        <div className="header-left">
+          <button className="menu-button" onClick={() => setOpenMenu(true)}>
+            <img src={menuIcon} alt="Menu" className="menu-icon" />
+          </button>
 
-        <img
-          src={logo}
-          alt="Logo Labany"
-          className="logo"
-          onClick={() => (window.location.href = '/')}
-        />
+          <button
+            className="search-button"
+            onClick={() => setOpenSearch(!openSearch)}
+          >
+            <img src={lupaIcon} alt="Buscar" className="search-icon" />
+          </button>
+        </div>
 
-        <button className="cart-button" onClick={() => setOpenCart(true)}>
-          <img src={cartIcon} alt="Carrinho" className="cart-icon" />
+        <div className="header-center">
+          <img src={logo} alt="Logo" className="logo" />
+        </div>
 
-          {cartQuantity > 0 && (
-            <span className="cart-badge">{cartQuantity}</span>
-          )}
-        </button>
+        <div className="header-right">
+          <button className="cart-button" onClick={() => setOpenCart(true)}>
+            <img src={cartIcon} alt="Carrinho" className="cart-icon" />
+
+            {cartQuantity > 0 && (
+              <span className="cart-badge">{cartQuantity}</span>
+            )}
+          </button>
+        </div>
       </header>
+
+      <SearchPanel
+        openSearch={openSearch}
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
+        products={products}
+        setFilteredProducts={setFilteredProducts}
+        setActiveFilter={setActiveFilter}
+        setFilterLabel={setFilterLabel}
+        />
 
       <main className="container fade-in">
         <h2 className="section-title">
@@ -98,7 +131,7 @@ function Products() {
               ))}
             </>
           ) : filteredProducts.length > 0 ? (
-            filteredProducts.map((product) => (
+           filteredProducts.slice(0, visibleCount).map((product) => (
               <article
                 className={`product-card ${!product.available ? 'unavailable' : ''}`}
                 key={product.id}
@@ -215,6 +248,24 @@ function Products() {
                 document.body
             )}
         </section>
+        {visibleCount < filteredProducts.length && (
+        <div className="load-more">
+            <button
+            onClick={() => {
+                setVisibleCount((prev) => prev + 10)
+
+                setTimeout(() => {
+                window.scrollBy({
+                    top: 300,
+                    behavior: 'smooth',
+                })
+                }, 100)
+            }}
+            >
+            Ver mais
+            </button>
+        </div>
+        )}
       </main>
 
       <CartDrawer open={openCart} onClose={() => setOpenCart(false)} />
@@ -252,7 +303,7 @@ function Products() {
                 const filtered = products.filter(
                     (p) => p.productSection === 'launch'
                 )
-
+                setVisibleCount(10)
                 setFilteredProducts(filtered)
                 setActiveFilter('launch')
                 setFilterLabel('Lançamentos')
@@ -268,7 +319,7 @@ function Products() {
                 const filtered = products.filter(
                     (p) => p.productSection === 'bestseller'
                 )
-
+                setVisibleCount(10)
                 setFilteredProducts(filtered)
                 setActiveFilter('bestseller')
                 setFilterLabel('Mais vendidos')
@@ -284,7 +335,7 @@ function Products() {
                 const filtered = products.filter(
                     (p) => p.productSection === 'outlet'
                 )
-
+                setVisibleCount(10)
                 setFilteredProducts(filtered)
                 setActiveFilter('outlet')
                 setFilterLabel('Outlet')
@@ -311,7 +362,7 @@ function Products() {
                         const filtered = products.filter(
                         (p) => p.brand === brand
                         )
-
+                        setVisibleCount(10)
                         setFilteredProducts(filtered)
                         setActiveFilter('brand')
                         setFilterLabel(`Marca > ${brand}`)
@@ -341,7 +392,7 @@ function Products() {
                         const filtered = products.filter(
                         (p) => p.category === cat
                         )
-
+                        setVisibleCount(10)
                         setFilteredProducts(filtered)
                         setActiveFilter('category')
                         setFilterLabel(`Peças > ${cat}`)

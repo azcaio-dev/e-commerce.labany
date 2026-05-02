@@ -11,6 +11,7 @@ import { db } from '../services/firebase'
 import { onAuthStateChanged } from 'firebase/auth'
 import { useNavigate } from 'react-router-dom'
 import { auth } from '../services/firebase'
+import Toast from '../components/Toast'
 
 function AdminProducts() {
   const [products, setProducts] = useState([])
@@ -27,9 +28,18 @@ function AdminProducts() {
   const [productSection, setProductSection] = useState('')
   const [sizeType, setSizeType] = useState('letter')
   const [sizes, setSizes] = useState([])
+  const [toast, setToast] = useState({ message: '', type: 'success' })
 
   const navigate = useNavigate()
   const formRef = useRef(null)
+
+  function showToast(message, type = 'success') {
+    setToast({ message, type })
+
+    setTimeout(() => {
+      setToast({ message: '', type: 'success' })
+    }, 2500)
+  }
 
   const brands = [...new Set(products.map((p) => p.brand).filter(Boolean))]
   const categories = [...new Set(products.map((p) => p.category).filter(Boolean))]
@@ -74,19 +84,19 @@ function AdminProducts() {
   }
 
   useEffect(() => {
-  async function fetchProducts() {
-    const snapshot = await getDocs(collection(db, 'products'))
+    async function fetchProducts() {
+      const snapshot = await getDocs(collection(db, 'products'))
 
-    const data = snapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }))
+      const data = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }))
 
-    setProducts(data)
-  }
+      setProducts(data)
+    }
 
-  fetchProducts()
-}, [])
+    fetchProducts()
+  }, [])
 
   const uploadImage = async (file) => {
     const formData = new FormData()
@@ -177,10 +187,10 @@ function AdminProducts() {
 
         await updateDoc(doc(db, 'products', editingId), updatedData)
 
-        alert('Produto atualizado!')
+        showToast('Produto atualizado com sucesso!', 'success')
       } else {
         if (!file1 || !file2) {
-          alert('Selecione as duas imagens')
+          showToast('Selecione as duas imagens', 'warning')
           setLoading(false)
           return
         }
@@ -202,7 +212,7 @@ function AdminProducts() {
           available: true,
         })
 
-        alert('Produto cadastrado!')
+        showToast('Produto cadastrado com sucesso!', 'success')
       }
 
       clearForm()
@@ -210,7 +220,7 @@ function AdminProducts() {
       loadProducts()
     } catch (error) {
       console.error(error)
-      alert('Erro ao salvar produto')
+      showToast('Erro ao cadastrar produto', 'error')
     }
 
     setLoading(false)
@@ -233,6 +243,13 @@ function AdminProducts() {
 
   return (
     <main className="admin-products">
+      <button
+        className="admin-back-button"
+        onClick={() => navigate(-1)}
+      >
+        ← Voltar
+      </button>
+
       <h1>Painel de Produtos</h1>
 
       <form ref={formRef} onSubmit={handleSubmit} className="admin-product-form">
@@ -404,11 +421,15 @@ function AdminProducts() {
                 {product.available ? 'Desativar' : 'Ativar'}
               </button>
 
-              <button onClick={() => handleDelete(product.id)}>Excluir</button>
+              <button onClick={() => handleDelete(product.id)}>
+                Excluir
+              </button>
             </div>
           </div>
         ))}
       </div>
+
+      <Toast message={toast.message} type={toast.type} />
     </main>
   )
 }

@@ -1,11 +1,30 @@
 import { useEffect, useState } from 'react'
-import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc } from 'firebase/firestore'
+import {
+  collection,
+  addDoc,
+  getDocs,
+  deleteDoc,
+  doc,
+  updateDoc,
+} from 'firebase/firestore'
 import { db } from '../services/firebase'
+import Toast from '../components/Toast'
+import { useNavigate } from 'react-router-dom'
 
 function AdminBanners() {
   const [banners, setBanners] = useState([])
   const [file, setFile] = useState(null)
   const [loading, setLoading] = useState(false)
+  const [toast, setToast] = useState({ message: '', type: 'success' })
+  const navigate = useNavigate()
+
+  function showToast(message, type = 'success') {
+    setToast({ message, type })
+
+    setTimeout(() => {
+      setToast({ message: '', type: 'success' })
+    }, 2500)
+  }
 
   async function loadBanners() {
     const snapshot = await getDocs(collection(db, 'banners'))
@@ -19,12 +38,12 @@ function AdminBanners() {
   }
 
   useEffect(() => {
-  async function fetchBanners() {
-    await loadBanners()
-  }
+    async function fetchBanners() {
+      await loadBanners()
+    }
 
-  fetchBanners()
-}, [])
+    fetchBanners()
+  }, [])
 
   const uploadImage = async (file) => {
     const formData = new FormData()
@@ -52,7 +71,7 @@ function AdminBanners() {
     e.preventDefault()
 
     if (!file) {
-      alert('Selecione uma imagem')
+      showToast('Selecione uma imagem', 'warning')
       return
     }
 
@@ -68,21 +87,21 @@ function AdminBanners() {
 
       setFile(null)
       e.target.reset()
-
       loadBanners()
+
+      showToast('Banner cadastrado com sucesso!', 'success')
     } catch (error) {
       console.error(error)
-      alert('Erro ao cadastrar banner')
+      showToast('Erro ao cadastrar banner', 'error')
     }
 
     setLoading(false)
   }
 
   async function handleDelete(id) {
-    if (!confirm('Excluir banner?')) return
-
     await deleteDoc(doc(db, 'banners', id))
     loadBanners()
+    showToast('Banner excluído', 'success')
   }
 
   async function toggleActive(banner) {
@@ -91,10 +110,21 @@ function AdminBanners() {
     })
 
     loadBanners()
+
+    showToast(
+      banner.active ? 'Banner desativado' : 'Banner ativado',
+      'success'
+    )
   }
 
   return (
     <main className="admin-products">
+      <button
+        className="admin-back-button"
+        onClick={() => navigate(-1)}
+      >
+        ← Voltar
+      </button>
       <h1>Painel de Banners</h1>
 
       <form onSubmit={handleSubmit} className="admin-product-form">
@@ -112,7 +142,13 @@ function AdminBanners() {
       <div className="admin-list">
         {banners.map((banner) => (
           <div key={banner.id} className="admin-item">
-            <img src={banner.image} alt="" />
+            <img
+              src={banner.image}
+              alt=""
+              onError={(e) => {
+                e.target.src = '/placeholder.png'
+              }}
+            />
 
             <div>
               <p>{banner.active ? 'Ativo' : 'Inativo'}</p>
@@ -130,6 +166,8 @@ function AdminBanners() {
           </div>
         ))}
       </div>
+
+      <Toast message={toast.message} type={toast.type} />
     </main>
   )
 }

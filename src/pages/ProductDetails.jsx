@@ -5,19 +5,30 @@ import { db } from '../services/firebase'
 import { useCart } from '../context/CartContext'
 import CartDrawer from '../components/CartDrawer'
 import cartIcon from '../assets/cart.png'
+import Toast from '../components/Toast'
 
 function ProductDetails() {
   const { id } = useParams()
   const navigate = useNavigate()
   const { cart, addToCart } = useCart()
+
   const [product, setProduct] = useState(null)
   const [loading, setLoading] = useState(true)
   const [selectedImage, setSelectedImage] = useState('')
   const [selectedSize, setSelectedSize] = useState('')
   const [openCart, setOpenCart] = useState(false)
   const [added, setAdded] = useState(false)
+  const [toast, setToast] = useState({ message: '', type: 'success' })
 
   const cartQuantity = cart.reduce((acc, item) => acc + item.quantity, 0)
+
+  function showToast(message, type = 'success') {
+    setToast({ message, type })
+
+    setTimeout(() => {
+      setToast({ message: '', type: 'success' })
+    }, 2500)
+  }
 
   useEffect(() => {
     async function loadProduct() {
@@ -62,12 +73,18 @@ function ProductDetails() {
       </main>
     )
   }
+
   const formattedPrice = Number(product.price).toLocaleString('pt-BR', {
     style: 'currency',
     currency: 'BRL',
   })
 
-  const whatsappMessage = `Olá! Tenho interesse nesse produto: ${product.name} - ${formattedPrice}`
+  const whatsappMessage = `Olá! Tenho interesse nesse produto:
+
+Produto: ${product.name}
+Preço: ${formattedPrice}
+Tamanho: ${selectedSize || '-'}`
+
   const whatsappLink = `https://wa.me/5581999999999?text=${encodeURIComponent(
     whatsappMessage
   )}`
@@ -89,14 +106,12 @@ function ProductDetails() {
       </header>
 
       <section className="product-gallery">
-        {/* IMAGEM PRINCIPAL */}
         <img
           src={selectedImage}
           alt={product.name}
           className="main-product-image"
         />
 
-        {/* MINIATURAS */}
         <div className="thumbs">
           <img
             src={product.image}
@@ -145,7 +160,7 @@ function ProductDetails() {
             disabled={!product.available}
             onClick={() => {
               if (!selectedSize) {
-                alert('Selecione um tamanho')
+                showToast('Selecione um tamanho', 'warning')
                 return
               }
 
@@ -156,6 +171,7 @@ function ProductDetails() {
               })
 
               setAdded(true)
+              showToast('Produto adicionado ao carrinho', 'success')
 
               setTimeout(() => {
                 setAdded(false)
@@ -176,12 +192,15 @@ function ProductDetails() {
               target="_blank"
               rel="noreferrer"
             >
-              Comprar
+              Comprar pelo WhatsApp
             </a>
           )}
         </div>
       </section>
+
       <CartDrawer open={openCart} onClose={() => setOpenCart(false)} />
+
+      <Toast message={toast.message} type={toast.type} />
     </main>
   )
 }
