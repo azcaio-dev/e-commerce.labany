@@ -713,6 +713,7 @@ body {
   overflow-y: auto;
   box-shadow: 4px 0 16px rgba(0, 0, 0, 0.12);
   transition: left 0.3s ease;
+  overscroll-behavior: contain;
 }
 
 .side-menu.open {
@@ -1702,4 +1703,29 @@ body {
   max-height: 22px;
   object-fit: contain;
   display: block;
+}
+
+
+body.menu-open,
+html.menu-open {
+  overflow: hidden;
+  height: 100%;
+}
+
+.side-menu {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+}
+
+.menu-list {
+  height: calc(100vh - 60px);
+  overflow-y: auto;
+  padding-bottom: 40px;
+}
+
+body.menu-open,
+html.menu-open {
+  overflow: hidden;
+  height: 100%;
 }

@@ -8,6 +8,7 @@ import cartIcon from '../assets/cart.png'
 import menuIcon from '../assets/menu.png'
 import lupaIcon from '../assets/lupa.png'
 import SearchPanel from '../components/SearchPanel'
+import { useNavigate } from "react-router-dom"
 
 function Home() {
   const { cart, addToCart } = useCart()
@@ -27,6 +28,7 @@ function Home() {
   const [filterLabel, setFilterLabel] = useState('')
   const [openSearch, setOpenSearch] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
+  const navigate = useNavigate()
 
   const cartQuantity = cart.reduce((acc, item) => acc + item.quantity, 0)
 
@@ -41,12 +43,19 @@ function Home() {
   }, [])
 
   useEffect(() => {
-    document.body.style.overflow = openMenu || openCart ? 'hidden' : 'auto'
+  if (openMenu || openCart) {
+    document.body.classList.add('menu-open')
+    document.documentElement.classList.add('menu-open')
+  } else {
+    document.body.classList.remove('menu-open')
+    document.documentElement.classList.remove('menu-open')
+  }
 
-    return () => {
-      document.body.style.overflow = 'auto'
-    }
-  }, [openMenu, openCart])
+  return () => {
+    document.body.classList.remove('menu-open')
+    document.documentElement.classList.remove('menu-open')
+  }
+}, [openMenu, openCart])
 
   useEffect(() => {
     async function loadProducts() {
@@ -133,7 +142,12 @@ function Home() {
         </div>
 
         <div className="header-center">
-          <img src={logo} alt="Logo" className="logo" />
+          <img
+            src={logo}
+            alt="Logo"
+            className="logo"
+            onClick={() => navigate('/')}
+          />
         </div>
 
         <div className="header-right">
@@ -367,7 +381,7 @@ function Home() {
                         })}
                       </p>
                     </div>
-
+                  {activeFilter !== 'search' && (
                     <button
                       className={`add-cart-button ${
                         addedId === product.id ? 'added' : ''
@@ -391,6 +405,7 @@ function Home() {
                         ? '✔ Adicionado'
                         : '+ Carrinho'}
                     </button>
+                  )}
                   </article>
                 ))
               ) : (

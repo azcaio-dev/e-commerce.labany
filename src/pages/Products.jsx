@@ -45,12 +45,19 @@ function Products() {
 }, [])
 
   useEffect(() => {
-    document.body.style.overflow = openMenu || openCart ? 'hidden' : 'auto'
+  if (openMenu || openCart) {
+    document.body.classList.add('menu-open')
+    document.documentElement.classList.add('menu-open')
+  } else {
+    document.body.classList.remove('menu-open')
+    document.documentElement.classList.remove('menu-open')
+  }
 
-    return () => {
-      document.body.style.overflow = 'auto'
-    }
-  }, [openMenu, openCart])
+  return () => {
+    document.body.classList.remove('menu-open')
+    document.documentElement.classList.remove('menu-open')
+  }
+}, [openMenu, openCart])
 
   useEffect(() => {
     async function loadProducts() {
@@ -94,7 +101,12 @@ function Products() {
         </div>
 
         <div className="header-center">
-          <img src={logo} alt="Logo" className="logo" />
+          <img
+            src={logo}
+            alt="Logo"
+            className="logo"
+            onClick={() => navigate('/')}
+          />
         </div>
 
         <div className="header-right">
@@ -160,26 +172,29 @@ function Products() {
                   </p>
                 </div>
 
-                <button
-                  className={`add-cart-button ${
-                    addedId === product.id ? 'added' : ''
-                  }`}
-                  disabled={product.available === false}
-                  onClick={(e) => {
-                    e.stopPropagation()
+                {activeFilter !== 'search' && (
+                  <button
+                    className={`add-cart-button ${
+                      addedId === product.id ? 'added' : ''
+                    }`}
+                    disabled={product.available === false}
+                    onClick={(e) => {
+                      e.stopPropagation()
 
-                    if (!product.available) return
+                      if (!product.available) return
+                      if (activeFilter === 'search') return
 
-                    setSelectedProduct(product)
-                    setSelectedSize('')
+                      setSelectedProduct(product)
+                      setSelectedSize('')
                     }}
-                >
-                  {!product.available
-                    ? 'Indisponível'
-                    : addedId === product.id
-                    ? '✔ Adicionado'
-                    : '+ Carrinho'}
-                </button>
+                  >
+                    {!product.available
+                      ? 'Indisponível'
+                      : addedId === product.id
+                      ? '✔ Adicionado'
+                      : '+ Carrinho'}
+                  </button>
+                )}
               </article>
             ))
           ) : (
