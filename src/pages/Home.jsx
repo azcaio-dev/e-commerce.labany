@@ -9,6 +9,7 @@ import menuIcon from '../assets/menu.png'
 import lupaIcon from '../assets/lupa.png'
 import SearchPanel from '../components/SearchPanel'
 import { useNavigate } from "react-router-dom"
+import { createPortal } from 'react-dom'
 
 function Home() {
   const { cart, addToCart } = useCart()
@@ -29,6 +30,8 @@ function Home() {
   const [openSearch, setOpenSearch] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
   const navigate = useNavigate()
+  const [selectedProduct, setSelectedProduct] = useState(null)
+  const [selectedSize, setSelectedSize] = useState('')
 
   const cartQuantity = cart.reduce((acc, item) => acc + item.quantity, 0)
 
@@ -391,12 +394,8 @@ function Home() {
                         e.stopPropagation()
                         if (!product.available) return
 
-                        addToCart(product)
-                        setAddedId(product.id)
-
-                        setTimeout(() => {
-                          setAddedId(null)
-                        }, 1000)
+                      setSelectedProduct(product)
+                      setSelectedSize('')
                       }}
                     >
                       {!product.available
@@ -416,17 +415,78 @@ function Home() {
             </section>
           </>
         ) : (
-          !loading && (
-            <div className="view-all-wrapper fade-in">
-              <button
-                className="view-all-products"
-                onClick={() => (window.location.href = '/produtos')}
+            !loading && (
+              <div className="view-all-wrapper fade-in">
+                <button
+                  className="view-all-products"
+                  onClick={() => (window.location.href = '/produtos')}
+                >
+                  Ver todos os produtos
+                </button>
+              </div>
+            )
+          )}
+
+          {selectedProduct &&
+             createPortal(
+              <div
+                className="size-modal-overlay"
+                onClick={() => setSelectedProduct(null)}
               >
-                Ver todos os produtos
-              </button>
-            </div>
-          )
-        )}
+                <div
+                  className="size-modal"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <button
+                    className="size-modal-close"
+                    onClick={() => setSelectedProduct(null)}
+                  >
+                    ✕
+                  </button>
+
+                  <h3>Escolha o tamanho</h3>
+                  <p>{selectedProduct.name}</p>
+
+                  <div className="size-modal-options">
+                    {selectedProduct.sizes?.map((size) => (
+                      <button
+                        key={size}
+                        className={selectedSize === size ? 'selected' : ''}
+                        onClick={() => setSelectedSize(size)}
+                      >
+                        {size}
+                      </button>
+                    ))}
+                  </div>
+
+                  <button
+                    className={`size-modal-confirm ${
+                      addedId === selectedProduct?.id ? 'added' : ''
+                    }`}
+                    disabled={!selectedSize}
+                    onClick={() => {
+                      addToCart({
+                        ...selectedProduct,
+                        selectedSize,
+                      })
+
+                      setAddedId(selectedProduct.id)
+
+                      setTimeout(() => {
+                        setAddedId(null)
+                        setSelectedProduct(null)
+                        setSelectedSize('')
+                      }, 800)
+                    }}
+                  >
+                    {addedId === selectedProduct?.id
+                      ? '✔ Adicionado'
+                      : 'Adicionar ao carrinho'}
+                  </button>
+                </div>
+              </div>,
+              document.body
+            )}
       </main>
 
       <CartDrawer open={openCart} onClose={() => setOpenCart(false)} />
