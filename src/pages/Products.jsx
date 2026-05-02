@@ -1,4 +1,3 @@
-import logo from '../assets/logo-labany.jpeg'
 import cartIcon from '../assets/cart.png'
 import menuIcon from '../assets/menu.png'
 import { useEffect, useState } from 'react'
@@ -102,8 +101,8 @@ function Products() {
 
         <div className="header-center">
           <img
-            src={logo}
-            alt="Logo"
+            src="/logoo.png"
+            alt="LABANY"
             className="logo"
             onClick={() => navigate('/')}
           />

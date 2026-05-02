@@ -1,4 +1,3 @@
-import logo from '../assets/logo-labany.jpeg'
 import { useCart } from '../context/CartContext'
 import { useEffect, useState } from 'react'
 import CartDrawer from '../components/CartDrawer'
@@ -146,8 +145,8 @@ function Home() {
 
         <div className="header-center">
           <img
-            src={logo}
-            alt="Logo"
+            src="/logoo.png"
+            alt="LABANY"
             className="logo"
             onClick={() => navigate('/')}
           />
