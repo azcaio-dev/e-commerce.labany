@@ -6,11 +6,17 @@ import { useCart } from '../context/CartContext'
 import CartDrawer from '../components/CartDrawer'
 import cartIcon from '../assets/cart.png'
 import Toast from '../components/Toast'
+import stores from '../config/stores'
+import useStoreTheme from '../hooks/useStoreTheme'
 
 function ProductDetails() {
-  const { id } = useParams()
+  const { storeSlug = 'labany', id } = useParams()
   const navigate = useNavigate()
   const { cart, addToCart } = useCart()
+
+  const store = stores[storeSlug] || stores.labany
+
+  useStoreTheme(store)
 
   const [product, setProduct] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -31,9 +37,17 @@ function ProductDetails() {
   }
 
   useEffect(() => {
+    if (product) {
+      document.title = `${product.name} | ${store.name}`
+    }
+  }, [product, store])
+
+  useEffect(() => {
     async function loadProduct() {
       try {
-        const productRef = doc(db, 'products', id)
+        setLoading(true)
+
+        const productRef = doc(db, 'stores', storeSlug, 'products', id)
         const productSnap = await getDoc(productRef)
 
         if (productSnap.exists()) {
@@ -48,7 +62,7 @@ function ProductDetails() {
           setProduct(null)
         }
       } catch (error) {
-        console.error(error)
+        console.error('Erro ao carregar produto:', error)
         setProduct(null)
       } finally {
         setLoading(false)
@@ -56,7 +70,7 @@ function ProductDetails() {
     }
 
     loadProduct()
-  }, [id])
+  }, [storeSlug, id])
 
   if (loading) {
     return (
@@ -79,19 +93,19 @@ function ProductDetails() {
     currency: 'BRL',
   })
 
-  const whatsappMessage = `Olá! Tenho interesse nesse produto:
+  const whatsappMessage = `${store.checkout?.messageIntro || 'Olá! Tenho interesse nesse produto:'}
 
 Produto: ${product.name}
 Preço: ${formattedPrice}
 Tamanho: ${selectedSize || '-'}`
 
-  const whatsappLink = `https://wa.me/5581999999999?text=${encodeURIComponent(
+  const whatsappLink = `https://wa.me/${store.whatsapp}?text=${encodeURIComponent(
     whatsappMessage
   )}`
 
   return (
-    <main className="product-details fade-in">
-      <header className="details-header">
+    <>
+      <header className="details-header full-details-header">
         <button className="details-back-button" onClick={() => navigate(-1)}>
           ← Voltar
         </button>
@@ -105,103 +119,104 @@ Tamanho: ${selectedSize || '-'}`
         </button>
       </header>
 
-      <section className="product-gallery">
-        <img
-          src={selectedImage}
-          alt={product.name}
-          className="main-product-image"
-        />
-
-        <div className="thumbs">
+      <main className="product-details fade-in">
+        <section className="product-gallery">
           <img
-            src={product.image}
+            src={selectedImage}
             alt={product.name}
-            onClick={() => setSelectedImage(product.image)}
+            className="main-product-image"
           />
 
-          {product.image2 && (
+          <div className="thumbs">
             <img
-              src={product.image2}
+              src={product.image}
               alt={product.name}
-              onClick={() => setSelectedImage(product.image2)}
+              onClick={() => setSelectedImage(product.image)}
             />
-          )}
-        </div>
-      </section>
 
-      <section className="product-content">
-        <h1>{product.name}</h1>
-        <strong>{formattedPrice}</strong>
-
-        <div className="product-description">
-          <h3>Descrição</h3>
-          <p>{product.description || 'Sem descrição cadastrada.'}</p>
-        </div>
-
-        <div className="product-sizes">
-          <h3>Tamanhos disponíveis</h3>
-
-          <div className="size-options">
-            {product.sizes?.map((size) => (
-              <button
-                key={size}
-                className={selectedSize === size ? 'selected' : ''}
-                onClick={() => setSelectedSize(size)}
-              >
-                {size}
-              </button>
-            ))}
+            {product.image2 && (
+              <img
+                src={product.image2}
+                alt={product.name}
+                onClick={() => setSelectedImage(product.image2)}
+              />
+            )}
           </div>
-        </div>
+        </section>
 
-        <div className="product-actions">
-          <button
-            className={`add-cart-button ${added ? 'added' : ''}`}
-            disabled={!product.available}
-            onClick={() => {
-              if (!selectedSize) {
-                showToast('Selecione um tamanho', 'warning')
-                return
-              }
+        <section className="product-content">
+          <h1>{product.name}</h1>
+          <strong>{formattedPrice}</strong>
 
-              addToCart({
-                ...product,
-                selectedSize,
-                price: formattedPrice,
-              })
+          <div className="product-description">
+            <h3>Descrição</h3>
+            <p>{product.description || 'Sem descrição cadastrada.'}</p>
+          </div>
 
-              setAdded(true)
-              showToast('Produto adicionado ao carrinho', 'success')
+          <div className="product-sizes">
+            <h3>Tamanhos disponíveis</h3>
 
-              setTimeout(() => {
-                setAdded(false)
-              }, 1000)
-            }}
-          >
-            {!product.available
-              ? 'Indisponível'
-              : added
-              ? '✔ Adicionado'
-              : 'Adicionar'}
-          </button>
+            <div className="size-options">
+              {product.sizes?.map((size) => (
+                <button
+                  key={size}
+                  className={selectedSize === size ? 'selected' : ''}
+                  onClick={() => setSelectedSize(size)}
+                >
+                  {size}
+                </button>
+              ))}
+            </div>
+          </div>
 
-          {product.available && (
-            <a
-              className="whatsapp-button"
-              href={whatsappLink}
-              target="_blank"
-              rel="noreferrer"
+          <div className="product-actions">
+            <button
+              className={`add-cart-button ${added ? 'added' : ''}`}
+              disabled={!product.available}
+              onClick={() => {
+                if (!selectedSize) {
+                  showToast('Selecione um tamanho', 'warning')
+                  return
+                }
+
+                addToCart({
+                  ...product,
+                  selectedSize,
+                  price: product.price,
+                })
+
+                setAdded(true)
+                showToast('Produto adicionado ao carrinho', 'success')
+
+                setTimeout(() => {
+                  setAdded(false)
+                }, 1000)
+              }}
             >
-              Comprar pelo WhatsApp
-            </a>
-          )}
-        </div>
-      </section>
+              {!product.available
+                ? 'Indisponível'
+                : added
+                ? '✔ Adicionado'
+                : 'Adicionar'}
+            </button>
+
+            {product.available && (
+              <a
+                className="whatsapp-button"
+                href={whatsappLink}
+                target="_blank"
+                rel="noreferrer"
+              >
+                Comprar pelo WhatsApp
+              </a>
+            )}
+          </div>
+        </section>
+      </main>
 
       <CartDrawer open={openCart} onClose={() => setOpenCart(false)} />
-
       <Toast message={toast.message} type={toast.type} />
-    </main>
+    </>
   )
 }
 

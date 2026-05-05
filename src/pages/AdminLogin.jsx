@@ -1,14 +1,18 @@
-import { useState } from 'react'
 import { signInWithEmailAndPassword } from 'firebase/auth'
 import { doc, getDoc } from 'firebase/firestore'
 import { auth, db } from '../services/firebase'
 import { useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
 
 function AdminLogin() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const navigate = useNavigate()
+
+  useEffect(() => {
+    document.title = 'ORBY | Painel Administrativo'
+  }, [])
 
   async function handleLogin(e) {
     e.preventDefault()

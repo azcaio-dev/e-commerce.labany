@@ -1,7 +1,7 @@
 import cartIcon from '../assets/cart.png'
 import menuIcon from '../assets/menu.png'
 import { useEffect, useState } from 'react'
-import { collection, getDocs, query, where } from 'firebase/firestore'
+import { collection, getDocs } from 'firebase/firestore'
 import { db } from '../services/firebase'
 import CartDrawer from '../components/CartDrawer'
 import { useCart } from '../context/CartContext'
@@ -10,6 +10,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import lupaIcon from '../assets/lupa.png'
 import SearchPanel from '../components/SearchPanel'
 import stores from '../config/stores'
+import useStoreTheme from '../hooks/useStoreTheme'
 
 function Products() {
   const { cart, addToCart } = useCart()
@@ -18,6 +19,8 @@ function Products() {
 
   const store = stores[storeSlug] || stores.labany
   const storePrefix = `/${storeSlug}`
+
+  useStoreTheme(store)
 
   const [scrolled, setScrolled] = useState(false)
   const [products, setProducts] = useState([])
@@ -38,17 +41,6 @@ function Products() {
   const [searchTerm, setSearchTerm] = useState('')
 
   const cartQuantity = cart.reduce((acc, item) => acc + item.quantity, 0)
-
-  useEffect(() => {
-    if (!store?.colors) return
-
-    const root = document.documentElement
-
-    root.style.setProperty('--color-primary', store.colors.primary)
-    root.style.setProperty('--color-secondary', store.colors.secondary)
-    root.style.setProperty('--color-background', store.colors.background)
-    root.style.setProperty('--color-text', store.colors.text)
-  }, [store])
 
   useEffect(() => {
     function handleScroll() {
@@ -80,26 +72,19 @@ function Products() {
       try {
         setLoading(true)
 
-        const q = query(
-          collection(db, 'products'),
-          where('storeSlug', '==', storeSlug)
+        const snapshot = await getDocs(
+          collection(db, 'stores', storeSlug, 'products')
         )
-
-        const snapshot = await getDocs(q)
 
         const data = snapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
         }))
 
-        console.log('STORE SLUG DA URL:', storeSlug)
-        console.log('PRODUTOS ENCONTRADOS:', data.length)
-        console.log(data)
-
         setProducts(data)
         setFilteredProducts(data)
       } catch (error) {
-        console.error(error)
+        console.error('Erro ao carregar produtos:', error)
       } finally {
         setLoading(false)
       }
@@ -209,7 +194,6 @@ function Products() {
                       e.stopPropagation()
 
                       if (!product.available) return
-                      if (activeFilter === 'search') return
 
                       setSelectedProduct(product)
                       setSelectedSize('')
@@ -323,7 +307,8 @@ function Products() {
           <button
             className="menu-link"
             onClick={() => {
-              window.location.href = `${storePrefix}`
+              navigate(storePrefix)
+              setOpenMenu(false)
             }}
           >
             Home
@@ -389,64 +374,76 @@ function Products() {
             Outlet
           </button>
 
-          <button
-            className="menu-link"
-            onClick={() => setOpenBrands(!openBrands)}
-          >
-            <span>Marcas</span>
-            <span>›</span>
-          </button>
+          {store.menu?.showBrands && (
+            <>
+              <button
+                className="menu-link"
+                onClick={() => setOpenBrands(!openBrands)}
+              >
+                <span>{store.menu?.brandsLabel || 'Marcas'}</span>
+                <span>›</span>
+              </button>
 
-          {openBrands && (
-            <div className="submenu">
-              {brands.map((brand) => (
-                <button
-                  key={brand}
-                  onClick={() => {
-                    const filtered = products.filter(
-                      (p) => p.brand === brand
-                    )
-                    setVisibleCount(10)
-                    setFilteredProducts(filtered)
-                    setActiveFilter('brand')
-                    setFilterLabel(`Marca > ${brand}`)
-                    setOpenMenu(false)
-                  }}
-                >
-                  {brand}
-                </button>
-              ))}
-            </div>
+              {openBrands && (
+                <div className="submenu">
+                  {brands.map((brand) => (
+                    <button
+                      key={brand}
+                      onClick={() => {
+                        const filtered = products.filter(
+                          (p) => p.brand === brand
+                        )
+                        setVisibleCount(10)
+                        setFilteredProducts(filtered)
+                        setActiveFilter('brand')
+                        setFilterLabel(
+                          `${store.menu?.brandsLabel || 'Marcas'} > ${brand}`
+                        )
+                        setOpenMenu(false)
+                      }}
+                    >
+                      {brand}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </>
           )}
 
-          <button
-            className="menu-link"
-            onClick={() => setOpenCategories(!openCategories)}
-          >
-            <span>Peças</span>
-            <span>›</span>
-          </button>
+          {store.menu?.showCategories !== false && (
+            <>
+              <button
+                className="menu-link"
+                onClick={() => setOpenCategories(!openCategories)}
+              >
+                <span>{store.menu?.categoriesLabel || 'Peças'}</span>
+                <span>›</span>
+              </button>
 
-          {openCategories && (
-            <div className="submenu">
-              {categories.map((cat) => (
-                <button
-                  key={cat}
-                  onClick={() => {
-                    const filtered = products.filter(
-                      (p) => p.category === cat
-                    )
-                    setVisibleCount(10)
-                    setFilteredProducts(filtered)
-                    setActiveFilter('category')
-                    setFilterLabel(`Peças > ${cat}`)
-                    setOpenMenu(false)
-                  }}
-                >
-                  {cat}
-                </button>
-              ))}
-            </div>
+              {openCategories && (
+                <div className="submenu">
+                  {categories.map((cat) => (
+                    <button
+                      key={cat}
+                      onClick={() => {
+                        const filtered = products.filter(
+                          (p) => p.category === cat
+                        )
+                        setVisibleCount(10)
+                        setFilteredProducts(filtered)
+                        setActiveFilter('category')
+                        setFilterLabel(
+                          `${store.menu?.categoriesLabel || 'Peças'} > ${cat}`
+                        )
+                        setOpenMenu(false)
+                      }}
+                    >
+                      {cat}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </>
           )}
         </nav>
       </div>

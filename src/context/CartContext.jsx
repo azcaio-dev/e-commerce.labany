@@ -1,66 +1,90 @@
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useState } from 'react'
 
 const CartContext = createContext()
 
-export function CartProvider({ children }) {
-  const [cart, setCart] = useState(() => {
-    const savedCart = localStorage.getItem('@loja-labany:cart')
-    return savedCart ? JSON.parse(savedCart) : []
-  })
+function getStoreSlugFromUrl() {
+  const slug = window.location.pathname.split('/')[1]
+  return slug || 'labany'
+}
 
-  useEffect(() => {
-    localStorage.setItem('@loja-labany:cart', JSON.stringify(cart))
-  }, [cart])
+function getCartKey() {
+  const storeSlug = getStoreSlugFromUrl()
+  return `@orby:${storeSlug}:cart`
+}
+
+function getInitialCart() {
+  const savedCart = localStorage.getItem(getCartKey())
+  return savedCart ? JSON.parse(savedCart) : []
+}
+
+export function CartProvider({ children }) {
+  const [cart, setCart] = useState(getInitialCart)
+
+  function saveCart(newCart) {
+    localStorage.setItem(getCartKey(), JSON.stringify(newCart))
+    setCart(newCart)
+  }
 
   function addToCart(product) {
+    const storeSlug = getStoreSlugFromUrl()
+
     setCart((prev) => {
       const exists = prev.find(
         (item) =>
           item.id === product.id &&
           item.selectedSize === product.selectedSize
-)
+      )
+
+      let updatedCart
 
       if (exists) {
-        return prev.map((item) =>
+        updatedCart = prev.map((item) =>
           item.id === product.id &&
           item.selectedSize === product.selectedSize
             ? { ...item, quantity: item.quantity + 1 }
             : item
         )
+      } else {
+        updatedCart = [...prev, { ...product, storeSlug, quantity: 1 }]
       }
 
-      return [...prev, { ...product, quantity: 1 }]
+      localStorage.setItem(getCartKey(), JSON.stringify(updatedCart))
+      return updatedCart
     })
   }
 
-  function removeFromCart(id) {
-    setCart((prev) => prev.filter((item) => item.id !== id))
+  function removeFromCart(id, selectedSize) {
+    const updatedCart = cart.filter(
+      (item) => !(item.id === id && item.selectedSize === selectedSize)
+    )
+
+    saveCart(updatedCart)
   }
 
   function increaseQuantity(id, selectedSize) {
-    setCart((prev) =>
-      prev.map((item) =>
-        item.id === id && item.selectedSize === selectedSize
-          ? { ...item, quantity: item.quantity + 1 }
-          : item
-      )
+    const updatedCart = cart.map((item) =>
+      item.id === id && item.selectedSize === selectedSize
+        ? { ...item, quantity: item.quantity + 1 }
+        : item
     )
+
+    saveCart(updatedCart)
   }
 
   function decreaseQuantity(id, selectedSize) {
-    setCart((prev) =>
-      prev
-        .map((item) =>
-          item.id === id && item.selectedSize === selectedSize
-            ? { ...item, quantity: item.quantity - 1 }
-            : item
-        )
-        .filter((item) => item.quantity > 0)
-    )
+    const updatedCart = cart
+      .map((item) =>
+        item.id === id && item.selectedSize === selectedSize
+          ? { ...item, quantity: item.quantity - 1 }
+          : item
+      )
+      .filter((item) => item.quantity > 0)
+
+    saveCart(updatedCart)
   }
 
   function clearCart() {
-    setCart([])
+    saveCart([])
   }
 
   return (

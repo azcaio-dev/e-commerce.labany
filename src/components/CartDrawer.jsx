@@ -1,55 +1,63 @@
 import { useCart } from '../context/CartContext'
-import storeConfig from '../config/storeConfig'
+import { useParams } from 'react-router-dom'
+import stores from '../config/stores'
 
 function CartDrawer({ open, onClose }) {
+  const { storeSlug = 'labany' } = useParams()
+  const store = stores[storeSlug] || stores.labany
+
   const {
-  cart,
-  clearCart,
-  increaseQuantity,
-  decreaseQuantity,
-} = useCart()
+    cart,
+    clearCart,
+    increaseQuantity,
+    decreaseQuantity,
+  } = useCart()
 
- const total = cart.reduce((acc, item) => {
-  let price = item.price
+  const total = cart.reduce((acc, item) => {
+    let price = item.price
 
-  if (typeof price === 'string') {
-    price = price
-      .replace('R$', '')
-      .replace(/\./g, '')
-      .replace(',', '.')
-      .trim()
-  }
+    if (typeof price === 'string') {
+      price = price
+        .replace('R$', '')
+        .replace(/\./g, '')
+        .replace(',', '.')
+        .trim()
+    }
 
-  price = Number(price)
+    price = Number(price)
 
-  if (Number.isNaN(price)) {
-    price = 0
-  }
+    if (Number.isNaN(price)) {
+      price = 0
+    }
 
-  return acc + item.quantity * price
-}, 0)
+    return acc + item.quantity * price
+  }, 0)
 
- const message = cart
+  const message = cart
     .map(
       (item) => `• ${item.quantity}x ${item.name}
-  Tam: ${item.selectedSize || '-'}
-  R$: ${item.price}`
+Tam: ${item.selectedSize || '-'}
+R$: ${Number(item.price).toLocaleString('pt-BR', {
+        style: 'currency',
+        currency: 'BRL',
+      })}`
     )
     .join('\n\n')
 
-  const whatsappLink = `https://wa.me/${storeConfig.whatsapp}?text=${encodeURIComponent(
-    `${storeConfig.checkout.messageIntro}
+  const whatsappLink = `https://wa.me/${store.whatsapp}?text=${encodeURIComponent(
+    `${store.checkout?.messageIntro || 'Olá! Quero finalizar meu pedido:'}
 
-  *Itens:*
-  ${message}
+*Itens:*
+${message}
 
-  *Total:* ${total.toLocaleString('pt-BR', {
+*Total:* ${total.toLocaleString('pt-BR', {
       style: 'currency',
       currency: 'BRL',
     })}
 
-  Pode me ajudar com o pagamento e entrega?`
+Pode me ajudar com o pagamento e entrega?`
   )}`
+
   return (
     <>
       <div className={`drawer ${open ? 'open' : ''}`}>
@@ -88,7 +96,12 @@ function CartDrawer({ open, onClose }) {
                   </div>
                 </div>
 
-                <p className="cart-price">{item.price}</p>
+                <p className="cart-price">
+                  {Number(item.price).toLocaleString('pt-BR', {
+                    style: 'currency',
+                    currency: 'BRL',
+                  })}
+                </p>
               </div>
             </div>
           ))}
@@ -106,6 +119,7 @@ function CartDrawer({ open, onClose }) {
               <a
                 href={whatsappLink}
                 target="_blank"
+                rel="noreferrer"
                 className="whatsapp-button"
               >
                 Finalizar no WhatsApp

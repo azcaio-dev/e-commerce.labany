@@ -9,16 +9,21 @@ import {
 } from 'firebase/firestore'
 import { db } from '../services/firebase'
 import { onAuthStateChanged } from 'firebase/auth'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { auth } from '../services/firebase'
 import Toast from '../components/Toast'
-import { useParams } from 'react-router-dom'
 import AdminHeader from '../components/AdminHeader'
+import stores from '../config/stores'
 
 function AdminProducts() {
   const [products, setProducts] = useState([])
   const [editingId, setEditingId] = useState(null)
-  const { storeSlug } = useParams()
+  const { storeSlug = 'labany' } = useParams()
+  const store = stores[storeSlug] || stores.labany
+
+  const brandLabel = store.menu?.brandsLabel || 'Marca'
+  const categoryLabel = store.menu?.categoriesLabel || 'Peças'
+
   const [name, setName] = useState('')
   const [price, setPrice] = useState('')
   const [description, setDescription] = useState('')
@@ -65,6 +70,10 @@ function AdminProducts() {
   }
 
   useEffect(() => {
+    document.title = `Produtos - ${store.name}`
+  }, [store])
+
+  useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (!user) {
         navigate('/admin')
@@ -75,7 +84,9 @@ function AdminProducts() {
   }, [navigate])
 
   async function loadProducts() {
-    const snapshot = await getDocs(collection(db, 'stores', storeSlug, 'products'))
+    const snapshot = await getDocs(
+      collection(db, 'stores', storeSlug, 'products')
+    )
 
     const data = snapshot.docs.map((doc) => ({
       id: doc.id,
@@ -87,7 +98,9 @@ function AdminProducts() {
 
   useEffect(() => {
     async function fetchProducts() {
-      const snapshot = await getDocs(collection(db, 'stores', storeSlug, 'products'))
+      const snapshot = await getDocs(
+        collection(db, 'stores', storeSlug, 'products')
+      )
 
       const data = snapshot.docs.map((doc) => ({
         id: doc.id,
@@ -100,27 +113,75 @@ function AdminProducts() {
     fetchProducts()
   }, [storeSlug])
 
-  const uploadImage = async (file) => {
-    const formData = new FormData()
-    formData.append('file', file)
-    formData.append('upload_preset', 'loja-labany')
+  function compressImage(file, maxWidth = 1000, quality = 0.75) {
+  return new Promise((resolve, reject) => {
+    const img = new Image()
+    const reader = new FileReader()
 
-    const response = await fetch(
-      'https://api.cloudinary.com/v1_1/dcqroxlt0/image/upload',
-      {
-        method: 'POST',
-        body: formData,
-      }
-    )
-
-    const data = await response.json()
-
-    if (!response.ok) {
-      throw new Error(data.error?.message)
+    reader.onload = (e) => {
+      img.src = e.target.result
     }
 
-    return data.secure_url
+    img.onload = () => {
+      const canvas = document.createElement('canvas')
+
+      const scale = Math.min(maxWidth / img.width, 1)
+      canvas.width = img.width * scale
+      canvas.height = img.height * scale
+
+      const ctx = canvas.getContext('2d')
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
+
+      canvas.toBlob(
+        (blob) => {
+          if (!blob) {
+            reject(new Error('Erro ao comprimir imagem'))
+            return
+          }
+
+          const compressedFile = new File(
+            [blob],
+            file.name.replace(/\.[^/.]+$/, '.webp'),
+            { type: 'image/webp' }
+          )
+
+          resolve(compressedFile)
+        },
+        'image/webp',
+        quality
+      )
+    }
+
+    img.onerror = reject
+    reader.onerror = reject
+
+    reader.readAsDataURL(file)
+  })
+}
+
+  const uploadImage = async (file) => {
+  const compressedFile = await compressImage(file)
+
+  const formData = new FormData()
+  formData.append('file', compressedFile)
+  formData.append('upload_preset', 'loja-labany')
+
+  const response = await fetch(
+    'https://api.cloudinary.com/v1_1/dcqroxlt0/image/upload',
+    {
+      method: 'POST',
+      body: formData,
+    }
+  )
+
+  const data = await response.json()
+
+  if (!response.ok) {
+    throw new Error(data.error?.message)
   }
+
+  return data.secure_url
+}
 
   function clearForm() {
     setName('')
@@ -160,7 +221,7 @@ function AdminProducts() {
     e.preventDefault()
 
     if (sizes.length === 0) {
-      alert('Selecione pelo menos um tamanho')
+      showToast('Selecione pelo menos um tamanho', 'warning')
       return
     }
 
@@ -187,7 +248,10 @@ function AdminProducts() {
           updatedData.image2 = await uploadImage(file2)
         }
 
-        await updateDoc(doc(db, 'stores', storeSlug, 'products', editingId), updatedData)
+        await updateDoc(
+          doc(db, 'stores', storeSlug, 'products', editingId),
+          updatedData
+        )
 
         showToast('Produto atualizado com sucesso!', 'success')
       } else {
@@ -197,8 +261,10 @@ function AdminProducts() {
           return
         }
 
-        const image1 = await uploadImage(file1)
-        const image2 = await uploadImage(file2)
+        const [image1, image2] = await Promise.all([
+          uploadImage(file1),
+          uploadImage(file2),
+        ])
 
         await addDoc(collection(db, 'stores', storeSlug, 'products'), {
           name,
@@ -222,7 +288,7 @@ function AdminProducts() {
       loadProducts()
     } catch (error) {
       console.error(error)
-      showToast('Erro ao cadastrar produto', 'error')
+      showToast('Erro ao salvar produto', 'error')
     }
 
     setLoading(false)
@@ -236,195 +302,219 @@ function AdminProducts() {
   }
 
   async function toggleAvailable(product) {
-      await updateDoc(doc(db, 'stores', storeSlug, 'products', product.id), {
-    available: !product.available,
-  })
+    await updateDoc(doc(db, 'stores', storeSlug, 'products', product.id), {
+      available: !product.available,
+    })
 
     loadProducts()
   }
 
   return (
-      <>
+    <>
       <AdminHeader />
+
       <main className="orby-admin-page">
         <section className="orby-admin-header">
           <div>
             <h1>Produtos</h1>
-            <p>Cadastre, edite e gerencie os produtos desta loja.</p>
+            <p>Cadastre, edite e gerencie os produtos da {store.name}.</p>
           </div>
         </section>
 
         <section className="orby-admin-layout">
-          <form ref={formRef} onSubmit={handleSubmit} className="orby-admin-form">  
-        <input
-          type="text"
-          placeholder="Nome"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          required
-        />
+          <form ref={formRef} onSubmit={handleSubmit} className="orby-admin-form">
+            <input
+              type="text"
+              placeholder="Nome"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+            />
 
-        <input
-          type="number"
-          placeholder="Preço"
-          value={price}
-          onChange={(e) => setPrice(e.target.value)}
-          required
-        />
+            <input
+              type="number"
+              placeholder="Preço"
+              value={price}
+              onChange={(e) => setPrice(e.target.value)}
+              required
+            />
 
-        <input
-          type="text"
-          placeholder="Marca"
-          list="brand-options"
-          value={brand}
-          onChange={(e) => setBrand(e.target.value)}
-        />
+            {store.menu?.showBrands !== false && (
+              <>
+                <input
+                  type="text"
+                  placeholder={brandLabel}
+                  list="brand-options"
+                  value={brand}
+                  onChange={(e) => setBrand(e.target.value)}
+                />
 
-        <datalist id="brand-options">
-          {brands.map((item) => (
-            <option key={item} value={item} />
-          ))}
-        </datalist>
+                <datalist id="brand-options">
+                  {brands.map((item) => (
+                    <option key={item} value={item} />
+                  ))}
+                </datalist>
+              </>
+            )}
 
-        <input
-          type="text"
-          placeholder="Tipo de roupa"
-          list="category-options"
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
-        />
+            {store.menu?.showCategories !== false && (
+              <>
+                <input
+                  type="text"
+                  placeholder={categoryLabel}
+                  list="category-options"
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                />
 
-        <datalist id="category-options">
-          {categories.map((item) => (
-            <option key={item} value={item} />
-          ))}
-        </datalist>
+                <datalist id="category-options">
+                  {categories.map((item) => (
+                    <option key={item} value={item} />
+                  ))}
+                </datalist>
+              </>
+            )}
 
-        <select
-          value={sizeType}
-          onChange={(e) => {
-            setSizeType(e.target.value)
-            setSizes(e.target.value === 'unique' ? ['Tamanho único'] : [])
-          }}
-        >
-          <option value="letter">Tamanho por letra</option>
-          <option value="number">Tamanho por número</option>
-          <option value="unique">Tamanho único</option>
-        </select>
-
-        <div className="sizes-box">
-          {sizeOptions.map((size) => (
-            <button
-              type="button"
-              key={size}
-              className={`size-button ${sizes.includes(size) ? 'active' : ''}`}
-              onClick={() => toggleSize(size)}
+            <select
+              value={sizeType}
+              onChange={(e) => {
+                setSizeType(e.target.value)
+                setSizes(e.target.value === 'unique' ? ['Tamanho único'] : [])
+              }}
             >
-              {size}
+              <option value="letter">Tamanho por letra</option>
+              <option value="number">Tamanho por número</option>
+              <option value="unique">Tamanho único</option>
+            </select>
+
+            <div className="sizes-box">
+              {sizeOptions.map((size) => (
+                <button
+                  type="button"
+                  key={size}
+                  className={`size-button ${sizes.includes(size) ? 'active' : ''}`}
+                  onClick={() => toggleSize(size)}
+                >
+                  {size}
+                </button>
+              ))}
+            </div>
+
+            <textarea
+              placeholder="Descrição"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              required
+            />
+
+            <label>Imagem 1 {editingId && '(opcional)'}</label>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => setFile1(e.target.files[0])}
+              required={!editingId}
+            />
+
+            <label>Imagem 2 {editingId && '(opcional)'}</label>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => setFile2(e.target.files[0])}
+              required={!editingId}
+            />
+
+            <div className="product-section-box">
+              <p>Seção do produto</p>
+
+              <div className="product-section-options">
+                {[
+                  { label: 'Lançamento', value: 'launch' },
+                  { label: 'Outlet', value: 'outlet' },
+                  { label: 'Mais vendidos', value: 'bestseller' },
+                ].map((item) => (
+                  <button
+                    type="button"
+                    key={item.value}
+                    className={`section-button ${
+                      productSection === item.value ? 'active' : ''
+                    }`}
+                    onClick={() => setProductSection(item.value)}
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <button type="submit" disabled={loading}>
+              {loading
+                ? 'Otimizando imagens...'
+                : editingId
+                ? 'Atualizar produto'
+                : 'Cadastrar produto'}
             </button>
-          ))}
-        </div>
 
-        <textarea
-          placeholder="Descrição"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          required
-        />
-
-        <label>Imagem 1 {editingId && '(opcional)'}</label>
-        <input
-          type="file"
-          accept="image/*"
-          onChange={(e) => setFile1(e.target.files[0])}
-          required={!editingId}
-        />
-
-        <label>Imagem 2 {editingId && '(opcional)'}</label>
-        <input
-          type="file"
-          accept="image/*"
-          onChange={(e) => setFile2(e.target.files[0])}
-          required={!editingId}
-        />
-
-        <div className="product-section-box">
-          <p>Seção do produto</p>
-
-          <div className="product-section-options">
-            {[
-              { label: 'Lançamento', value: 'launch' },
-              { label: 'Outlet', value: 'outlet' },
-              { label: 'Mais vendidos', value: 'bestseller' },
-            ].map((item) => (
-              <button
-                type="button"
-                key={item.value}
-                className={`section-button ${
-                  productSection === item.value ? 'active' : ''
-                }`}
-                onClick={() => setProductSection(item.value)}
-              >
-                {item.label}
+            {editingId && (
+              <button type="button" onClick={clearForm} className="cancel-edit">
+                Cancelar edição
               </button>
+            )}
+          </form>
+
+          <section className="orby-admin-list">
+            <div className="orby-list-header">
+              <h2>Produtos cadastrados</h2>
+              <span>{products.length} produto(s)</span>
+            </div>
+
+            {products.map((product) => (
+              <div key={product.id} className="orby-admin-item">
+                <img src={product.image} alt={product.name} />
+
+                <div>
+                  <strong>{product.name}</strong>
+
+                  <p>
+                    {Number(product.price).toLocaleString('pt-BR', {
+                      style: 'currency',
+                      currency: 'BRL',
+                    })}
+                  </p>
+
+                  {product.brand && (
+                    <p>
+                      {brandLabel}: {product.brand}
+                    </p>
+                  )}
+
+                  {product.category && (
+                    <p>
+                      {categoryLabel}: {product.category}
+                    </p>
+                  )}
+
+                  <p>{product.available ? 'Disponível' : 'Indisponível'}</p>
+                </div>
+
+                <div className="admin-actions">
+                  <button onClick={() => handleEdit(product)}>Editar</button>
+
+                  <button onClick={() => toggleAvailable(product)}>
+                    {product.available ? 'Desativar' : 'Ativar'}
+                  </button>
+
+                  <button onClick={() => handleDelete(product.id)}>
+                    Excluir
+                  </button>
+                </div>
+              </div>
             ))}
-          </div>
-        </div>
+          </section>
+        </section>
 
-        <button type="submit" disabled={loading}>
-          {loading
-            ? 'Salvando...'
-            : editingId
-            ? 'Atualizar produto'
-            : 'Cadastrar produto'}
-        </button>
-
-        {editingId && (
-          <button type="button" onClick={clearForm} className="cancel-edit">
-            Cancelar edição
-          </button>
-        )}
-      </form>
-
-      <section className="orby-admin-list">
-        <div className="orby-list-header">
-          <h2>Produtos cadastrados</h2>
-          <span>{products.length} produto(s)</span>
-        </div>
-        {products.map((product) => (
-          <div key={product.id} className="orby-admin-item">
-            <img src={product.image} alt={product.name} />
-
-            <div>
-              <strong>{product.name}</strong>
-              <p>
-                {Number(product.price).toLocaleString('pt-BR', {
-                  style: 'currency',
-                  currency: 'BRL',
-                })}
-              </p>
-              <p>{product.available ? 'Disponível' : 'Indisponível'}</p>
-            </div>
-
-            <div className="admin-actions">
-              <button onClick={() => handleEdit(product)}>Editar</button>
-
-              <button onClick={() => toggleAvailable(product)}>
-                {product.available ? 'Desativar' : 'Ativar'}
-              </button>
-
-              <button onClick={() => handleDelete(product.id)}>
-                Excluir
-              </button>
-            </div>
-          </div>
-        ))}
-      </section>
-      </section>
-
-      <Toast message={toast.message} type={toast.type} />
+        <Toast message={toast.message} type={toast.type} />
       </main>
-      </>
+    </>
   )
 }
 
