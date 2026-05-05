@@ -1,32 +1,53 @@
 import whatsappIcon from '../assets/whatsapp.png'
 import instagramIcon from '../assets/instagram.png'
 import emailIcon from '../assets/email.png'
+import { useLocation } from 'react-router-dom'
+import stores from '../config/stores'
 
 function Footer() {
+  const location = useLocation()
+
+  const storeSlug = location.pathname.split('/')[1] || 'labany'
+  const store = stores[storeSlug] || stores.labany
+
   return (
     <footer className="footer">
       <div className="footer-content">
-        <h3>Loja Labany</h3>
+        <h3>{store.name}</h3>
 
-        <p>Moda feminina com estilo e qualidade</p>
+        <p>{store.tagline}</p>
 
         <div className="footer-social">
-          <a href="https://wa.me/5581999999999" target="_blank" rel="noreferrer">
-            <img src={whatsappIcon} alt="WhatsApp" />
-          </a>
+          {store.whatsapp && (
+            <a
+              href={`https://wa.me/${store.whatsapp}`}
+              target="_blank"
+              rel="noreferrer"
+            >
+              <img src={whatsappIcon} alt="WhatsApp" />
+            </a>
+          )}
 
-          <a href="https://instagram.com/" target="_blank" rel="noreferrer">
-            <img src={instagramIcon} alt="Instagram" />
-          </a>
+          {store.instagram && (
+            <a
+              href={store.instagram}
+              target="_blank"
+              rel="noreferrer"
+            >
+              <img src={instagramIcon} alt="Instagram" />
+            </a>
+          )}
         </div>
 
-        <div className="footer-contact">
-          <img src={emailIcon} alt="Email" />
-          <span>suporte@labany.com</span>
-        </div>
+        {store.email && (
+          <div className="footer-contact">
+            <img src={emailIcon} alt="Email" />
+            <span>{store.email}</span>
+          </div>
+        )}
 
         <span className="footer-copy">
-          © {new Date().getFullYear()} Loja Labany
+          © {new Date().getFullYear()} {store.name}
         </span>
       </div>
     </footer>

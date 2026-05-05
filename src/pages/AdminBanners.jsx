@@ -9,14 +9,16 @@ import {
 } from 'firebase/firestore'
 import { db } from '../services/firebase'
 import Toast from '../components/Toast'
-import { useNavigate } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
+import AdminHeader from '../components/AdminHeader'
 
 function AdminBanners() {
   const [banners, setBanners] = useState([])
   const [file, setFile] = useState(null)
   const [loading, setLoading] = useState(false)
   const [toast, setToast] = useState({ message: '', type: 'success' })
-  const navigate = useNavigate()
+
+  const { storeSlug } = useParams()
 
   function showToast(message, type = 'success') {
     setToast({ message, type })
@@ -27,7 +29,9 @@ function AdminBanners() {
   }
 
   async function loadBanners() {
-    const snapshot = await getDocs(collection(db, 'banners'))
+    const snapshot = await getDocs(
+      collection(db, 'stores', storeSlug, 'banners')
+    )
 
     const data = snapshot.docs.map((doc) => ({
       id: doc.id,
@@ -37,13 +41,13 @@ function AdminBanners() {
     setBanners(data)
   }
 
-  useEffect(() => {
-    async function fetchBanners() {
-      await loadBanners()
-    }
+    useEffect(() => {
+      async function fetchBanners() {
+        await loadBanners()
+      }
 
-    fetchBanners()
-  }, [])
+      fetchBanners()
+    }, [storeSlug])
 
   const uploadImage = async (file) => {
     const formData = new FormData()
@@ -80,7 +84,7 @@ function AdminBanners() {
     try {
       const image = await uploadImage(file)
 
-      await addDoc(collection(db, 'banners'), {
+      await addDoc(collection(db, 'stores', storeSlug, 'banners'), {
         image,
         active: true,
       })
@@ -99,13 +103,15 @@ function AdminBanners() {
   }
 
   async function handleDelete(id) {
-    await deleteDoc(doc(db, 'banners', id))
+    if (!confirm('Deseja excluir este banner?')) return
+
+    await deleteDoc(doc(db, 'stores', storeSlug, 'banners', id))
     loadBanners()
     showToast('Banner excluído', 'success')
   }
 
   async function toggleActive(banner) {
-    await updateDoc(doc(db, 'banners', banner.id), {
+    await updateDoc(doc(db, 'stores', storeSlug, 'banners', banner.id), {
       active: !banner.active,
     })
 
@@ -118,57 +124,69 @@ function AdminBanners() {
   }
 
   return (
-    <main className="admin-products">
-      <button
-        className="admin-back-button"
-        onClick={() => navigate(-1)}
-      >
-        ← Voltar
-      </button>
-      <h1>Painel de Banners</h1>
+    <>
+      <AdminHeader />
+    <main className="orby-admin-page">
+      <section className="orby-admin-header">
+        <div>
+          <h1>Banners</h1>
+          <p>Cadastre e controle os banners da página inicial.</p>
+        </div>
+      </section>
 
-      <form onSubmit={handleSubmit} className="admin-product-form">
-        <input
-          type="file"
-          onChange={(e) => setFile(e.target.files[0])}
-          required
-        />
+      <section className="orby-admin-layout">
+        <form onSubmit={handleSubmit} className="orby-admin-form">
+          <label>Imagem do banner</label>
 
-        <button type="submit" disabled={loading}>
-          {loading ? 'Enviando...' : 'Cadastrar Banner'}
-        </button>
-      </form>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(e) => setFile(e.target.files[0])}
+            required
+          />
 
-      <div className="admin-list">
-        {banners.map((banner) => (
-          <div key={banner.id} className="admin-item">
-            <img
-              src={banner.image}
-              alt=""
-              onError={(e) => {
-                e.target.src = '/placeholder.png'
-              }}
-            />
+          <button type="submit" disabled={loading}>
+            {loading ? 'Enviando...' : 'Cadastrar banner'}
+          </button>
+        </form>
 
-            <div>
-              <p>{banner.active ? 'Ativo' : 'Inativo'}</p>
-            </div>
-
-            <div className="admin-actions">
-              <button onClick={() => toggleActive(banner)}>
-                {banner.active ? 'Desativar' : 'Ativar'}
-              </button>
-
-              <button onClick={() => handleDelete(banner.id)}>
-                Excluir
-              </button>
-            </div>
+        <section className="orby-admin-list">
+          <div className="orby-list-header">
+            <h2>Banners cadastrados</h2>
+            <span>{banners.length} banner(s)</span>
           </div>
-        ))}
-      </div>
+
+          {banners.map((banner) => (
+            <div key={banner.id} className="orby-admin-banner">
+              <img
+                src={banner.image}
+                alt="Banner"
+                onError={(e) => {
+                  e.target.src = '/placeholder.png'
+                }}
+              />
+
+              <div className="orby-banner-info">
+                <strong>{banner.active ? 'Ativo' : 'Inativo'}</strong>
+
+                <div className="admin-actions">
+                  <button onClick={() => toggleActive(banner)}>
+                    {banner.active ? 'Desativar' : 'Ativar'}
+                  </button>
+
+                  <button onClick={() => handleDelete(banner.id)}>
+                    Excluir
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </section>
+      </section>
 
       <Toast message={toast.message} type={toast.type} />
     </main>
+    </>
   )
 }
 

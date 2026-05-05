@@ -9,10 +9,10 @@ import lupaIcon from '../assets/lupa.png'
 import SearchPanel from '../components/SearchPanel'
 import { useNavigate } from "react-router-dom"
 import { createPortal } from 'react-dom'
+import storeConfig from '../config/storeConfig'
 
 function Home() {
   const { cart, addToCart } = useCart()
-
   const [openCart, setOpenCart] = useState(false)
   const [openMenu, setOpenMenu] = useState(false)
   const [products, setProducts] = useState([])
@@ -29,8 +29,19 @@ function Home() {
   const [openSearch, setOpenSearch] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
   const navigate = useNavigate()
+  const storeSlug = window.location.pathname.split('/')[1] || 'labany'
+  const storePrefix = `/${storeSlug}`
   const [selectedProduct, setSelectedProduct] = useState(null)
   const [selectedSize, setSelectedSize] = useState('')
+
+  useEffect(() => {
+  document.title = storeConfig.title
+
+  document.documentElement.style.setProperty('--color-primary', storeConfig.colors.primary)
+  document.documentElement.style.setProperty('--color-secondary', storeConfig.colors.secondary)
+  document.documentElement.style.setProperty('--color-background', storeConfig.colors.background)
+  document.documentElement.style.setProperty('--color-text', storeConfig.colors.text)
+}, [])
 
   const cartQuantity = cart.reduce((acc, item) => acc + item.quantity, 0)
 
@@ -62,7 +73,7 @@ function Home() {
   useEffect(() => {
     async function loadProducts() {
       try {
-        const snapshot = await getDocs(collection(db, 'products'))
+        const snapshot = await getDocs(collection(db, 'stores', storeSlug, 'products'))
 
         const data = snapshot.docs.map((doc) => ({
           id: doc.id,
@@ -84,7 +95,7 @@ function Home() {
   useEffect(() => {
     async function loadBanners() {
       try {
-        const snapshot = await getDocs(collection(db, 'banners'))
+        const snapshot = await getDocs(collection(db, 'stores', storeSlug, 'banners'))
 
         const data = snapshot.docs
           .map((doc) => ({
@@ -145,8 +156,8 @@ function Home() {
 
         <div className="header-center">
           <img
-            src="/logoo.png"
-            alt="LABANY"
+            src={storeConfig.logo}
+            alt={storeConfig.name}
             className="logo"
             onClick={() => {
               setFilteredProducts(products)
@@ -155,7 +166,7 @@ function Home() {
               setSearchTerm('')
               setOpenSearch(false)
               window.scrollTo({ top: 0, behavior: 'smooth' })
-              navigate('/')
+              navigate(storePrefix)
             }}
           />
         </div>
@@ -227,7 +238,7 @@ function Home() {
                   <article
                     key={product.id}
                     className="launch-card"
-                    onClick={() => (window.location.href = `/produto/${product.id}`)}
+                    onClick={() => (window.location.href = `${storePrefix}/produto/${product.id}`)}
                   >
                     <img src={product.image} alt={product.name} />
 
@@ -273,7 +284,7 @@ function Home() {
                   <article
                     key={product.id}
                     className="launch-card"
-                    onClick={() => (window.location.href = `/produto/${product.id}`)}
+                    onClick={() => (window.location.href = `${storePrefix}/produto/${product.id}`)}
                   >
                     <img src={product.image} alt={product.name} />
 
@@ -319,7 +330,7 @@ function Home() {
                   <article
                     key={product.id}
                     className="launch-card"
-                    onClick={() => (window.location.href = `/produto/${product.id}`)}
+                    onClick={() => (window.location.href = `${storePrefix}/produto/${product.id}`)}
                   >
                     <img src={product.image} alt={product.name} />
 
@@ -367,7 +378,7 @@ function Home() {
                   <article
                     className={`product-card ${!product.available ? 'unavailable' : ''}`}
                     key={product.id}
-                    onClick={() => (window.location.href = `/produto/${product.id}`)}
+                    onClick={() => (window.location.href = `${storePrefix}/produto/${product.id}`)}
                   >
                     <div className="product-image-wrapper">
                       <img
@@ -426,7 +437,7 @@ function Home() {
               <div className="view-all-wrapper fade-in">
                 <button
                   className="view-all-products"
-                  onClick={() => (window.location.href = '/produtos')}
+                  onClick={() => (window.location.href = `${storePrefix}/produtos`)}
                 >
                   Ver todos os produtos
                 </button>
@@ -519,7 +530,7 @@ function Home() {
           <button
             className="menu-link"
             onClick={() => {
-              window.location.href = '/produtos'
+             window.location.href = `${storePrefix}/produtos`
             }}
           >
             Todos os produtos

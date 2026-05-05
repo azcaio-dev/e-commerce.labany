@@ -1,4 +1,5 @@
 import { useCart } from '../context/CartContext'
+import storeConfig from '../config/storeConfig'
 
 function CartDrawer({ open, onClose }) {
   const {
@@ -36,12 +37,12 @@ function CartDrawer({ open, onClose }) {
     )
     .join('\n\n')
 
-  const whatsappLink = `https://wa.me/5581999706286?text=${encodeURIComponent(
-    `Olá! Quero finalizar meu pedido:
+  const whatsappLink = `https://wa.me/${storeConfig.whatsapp}?text=${encodeURIComponent(
+    `${storeConfig.checkout.messageIntro}
 
   *Itens:*
   ${message}
---------------------------------------
+
   *Total:* ${total.toLocaleString('pt-BR', {
       style: 'currency',
       currency: 'BRL',
@@ -49,7 +50,6 @@ function CartDrawer({ open, onClose }) {
 
   Pode me ajudar com o pagamento e entrega?`
   )}`
-
   return (
     <>
       <div className={`drawer ${open ? 'open' : ''}`}>

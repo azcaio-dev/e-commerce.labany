@@ -12,11 +12,13 @@ import { onAuthStateChanged } from 'firebase/auth'
 import { useNavigate } from 'react-router-dom'
 import { auth } from '../services/firebase'
 import Toast from '../components/Toast'
+import { useParams } from 'react-router-dom'
+import AdminHeader from '../components/AdminHeader'
 
 function AdminProducts() {
   const [products, setProducts] = useState([])
   const [editingId, setEditingId] = useState(null)
-
+  const { storeSlug } = useParams()
   const [name, setName] = useState('')
   const [price, setPrice] = useState('')
   const [description, setDescription] = useState('')
@@ -73,7 +75,7 @@ function AdminProducts() {
   }, [navigate])
 
   async function loadProducts() {
-    const snapshot = await getDocs(collection(db, 'products'))
+    const snapshot = await getDocs(collection(db, 'stores', storeSlug, 'products'))
 
     const data = snapshot.docs.map((doc) => ({
       id: doc.id,
@@ -85,7 +87,7 @@ function AdminProducts() {
 
   useEffect(() => {
     async function fetchProducts() {
-      const snapshot = await getDocs(collection(db, 'products'))
+      const snapshot = await getDocs(collection(db, 'stores', storeSlug, 'products'))
 
       const data = snapshot.docs.map((doc) => ({
         id: doc.id,
@@ -96,7 +98,7 @@ function AdminProducts() {
     }
 
     fetchProducts()
-  }, [])
+  }, [storeSlug])
 
   const uploadImage = async (file) => {
     const formData = new FormData()
@@ -185,7 +187,7 @@ function AdminProducts() {
           updatedData.image2 = await uploadImage(file2)
         }
 
-        await updateDoc(doc(db, 'products', editingId), updatedData)
+        await updateDoc(doc(db, 'stores', storeSlug, 'products', editingId), updatedData)
 
         showToast('Produto atualizado com sucesso!', 'success')
       } else {
@@ -198,7 +200,7 @@ function AdminProducts() {
         const image1 = await uploadImage(file1)
         const image2 = await uploadImage(file2)
 
-        await addDoc(collection(db, 'products'), {
+        await addDoc(collection(db, 'stores', storeSlug, 'products'), {
           name,
           price: Number(price),
           description,
@@ -229,30 +231,31 @@ function AdminProducts() {
   async function handleDelete(id) {
     if (!confirm('Deseja excluir este produto?')) return
 
-    await deleteDoc(doc(db, 'products', id))
+    await deleteDoc(doc(db, 'stores', storeSlug, 'products', id))
     loadProducts()
   }
 
   async function toggleAvailable(product) {
-    await updateDoc(doc(db, 'products', product.id), {
-      available: !product.available,
-    })
+      await updateDoc(doc(db, 'stores', storeSlug, 'products', product.id), {
+    available: !product.available,
+  })
 
     loadProducts()
   }
 
   return (
-    <main className="admin-products">
-      <button
-        className="admin-back-button"
-        onClick={() => navigate(-1)}
-      >
-        ← Voltar
-      </button>
+      <>
+      <AdminHeader />
+      <main className="orby-admin-page">
+        <section className="orby-admin-header">
+          <div>
+            <h1>Produtos</h1>
+            <p>Cadastre, edite e gerencie os produtos desta loja.</p>
+          </div>
+        </section>
 
-      <h1>Painel de Produtos</h1>
-
-      <form ref={formRef} onSubmit={handleSubmit} className="admin-product-form">
+        <section className="orby-admin-layout">
+          <form ref={formRef} onSubmit={handleSubmit} className="orby-admin-form">  
         <input
           type="text"
           placeholder="Nome"
@@ -311,15 +314,14 @@ function AdminProducts() {
 
         <div className="sizes-box">
           {sizeOptions.map((size) => (
-            <label key={size} className="size-checkbox">
-              <input
-                type="checkbox"
-                checked={sizes.includes(size)}
-                onChange={() => toggleSize(size)}
-                disabled={sizeType === 'unique'}
-              />
+            <button
+              type="button"
+              key={size}
+              className={`size-button ${sizes.includes(size) ? 'active' : ''}`}
+              onClick={() => toggleSize(size)}
+            >
               {size}
-            </label>
+            </button>
           ))}
         </div>
 
@@ -349,38 +351,24 @@ function AdminProducts() {
         <div className="product-section-box">
           <p>Seção do produto</p>
 
-          <label className="checkbox-label">
-            <input
-              type="radio"
-              name="productSection"
-              value="launch"
-              checked={productSection === 'launch'}
-              onChange={(e) => setProductSection(e.target.value)}
-            />
-            Lançamento
-          </label>
-
-          <label className="checkbox-label">
-            <input
-              type="radio"
-              name="productSection"
-              value="outlet"
-              checked={productSection === 'outlet'}
-              onChange={(e) => setProductSection(e.target.value)}
-            />
-            Outlet
-          </label>
-
-          <label className="checkbox-label">
-            <input
-              type="radio"
-              name="productSection"
-              value="bestseller"
-              checked={productSection === 'bestseller'}
-              onChange={(e) => setProductSection(e.target.value)}
-            />
-            Mais vendidos
-          </label>
+          <div className="product-section-options">
+            {[
+              { label: 'Lançamento', value: 'launch' },
+              { label: 'Outlet', value: 'outlet' },
+              { label: 'Mais vendidos', value: 'bestseller' },
+            ].map((item) => (
+              <button
+                type="button"
+                key={item.value}
+                className={`section-button ${
+                  productSection === item.value ? 'active' : ''
+                }`}
+                onClick={() => setProductSection(item.value)}
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
         </div>
 
         <button type="submit" disabled={loading}>
@@ -398,9 +386,13 @@ function AdminProducts() {
         )}
       </form>
 
-      <div className="admin-list">
+      <section className="orby-admin-list">
+        <div className="orby-list-header">
+          <h2>Produtos cadastrados</h2>
+          <span>{products.length} produto(s)</span>
+        </div>
         {products.map((product) => (
-          <div key={product.id} className="admin-item">
+          <div key={product.id} className="orby-admin-item">
             <img src={product.image} alt={product.name} />
 
             <div>
@@ -427,10 +419,12 @@ function AdminProducts() {
             </div>
           </div>
         ))}
-      </div>
+      </section>
+      </section>
 
       <Toast message={toast.message} type={toast.type} />
-    </main>
+      </main>
+      </>
   )
 }
 

@@ -13,15 +13,23 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/produto/:id" element={<ProductDetails />} />
-        <Route path="/admin" element={<AdminLogin />} />
-        <Route path="/admin/produtos" element={<AdminProducts />} />
-        <Route path="/admin/banners" element={<AdminBanners />} />
-        <Route path="/admin/dashboard" element={<AdminDashboard />} />
+        <Route path="/:storeSlug" element={<Home />} />
+
         <Route path="/produtos" element={<Products />} />
+        <Route path="/:storeSlug/produtos" element={<Products />} />
+
+        <Route path="/produto/:id" element={<ProductDetails />} />
+        <Route path="/:storeSlug/produto/:id" element={<ProductDetails />} />
+
+        <Route path="/admin/login" element={<AdminLogin />} />
+        <Route path="/admin" element={<AdminLogin />} />
+
+        <Route path="/admin/:storeSlug/dashboard" element={<AdminDashboard />} />
+        <Route path="/admin/:storeSlug/produtos" element={<AdminProducts />} />
+        <Route path="/admin/:storeSlug/banners" element={<AdminBanners />} />
       </Routes>
 
-      <Footer/>
+      {!window.location.pathname.startsWith('/admin') && <Footer />}
     </BrowserRouter>
   )
 }

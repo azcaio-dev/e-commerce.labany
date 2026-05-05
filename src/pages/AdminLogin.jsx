@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { signInWithEmailAndPassword } from 'firebase/auth'
-import { auth } from '../services/firebase'
+import { doc, getDoc } from 'firebase/firestore'
+import { auth, db } from '../services/firebase'
 import { useNavigate } from 'react-router-dom'
 
 function AdminLogin() {
@@ -14,8 +15,19 @@ function AdminLogin() {
     setError('')
 
     try {
-      await signInWithEmailAndPassword(auth, email, password)
-      navigate('/admin/dashboard')
+      const userCredential = await signInWithEmailAndPassword(auth, email, password)
+
+      const userRef = doc(db, 'users', userCredential.user.uid)
+      const userSnap = await getDoc(userRef)
+
+      if (!userSnap.exists()) {
+        setError('Usuário sem loja vinculada.')
+        return
+      }
+
+      const userData = userSnap.data()
+
+      navigate(`/admin/${userData.storeSlug}/dashboard`)
     } catch {
       setError('E-mail ou senha inválidos')
     }
@@ -24,8 +36,10 @@ function AdminLogin() {
   return (
     <main className="admin-login">
       <form onSubmit={handleLogin} className="admin-form">
-        <h1>Login Admin</h1>
+        <img src="/logo-orby.png" alt="ORBY" className="orby-login-logo" />
 
+        <h1>ORBY | Login</h1>
+        
         <input
           type="email"
           placeholder="E-mail"

@@ -8,6 +8,16 @@
   --color-white: #ffffff;
 }
 
+:root {
+  --orby-primary: #5b2cff;
+  --orby-dark: #111827;
+  --orby-bg: #f6f4ff;
+  --orby-card: #ffffff;
+  --orby-text: #1f2937;
+  --orby-muted: #6b7280;
+  --orby-border: #e5e7eb;
+}
+
 body {
   font-family: 'DM Sans', sans-serif;
 }
@@ -302,7 +312,7 @@ body {
   align-items: center;
   gap: 12px;
   padding: 14px 0;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--color-secondary);
 }
 
 .cart-info {
@@ -342,7 +352,7 @@ body {
   background: var(--color-primary);
   color: var(--color-white);
 
-  border: 2px solid #3a2f2c;
+  border: 2px solid var(--color-text);
 }
 
 /* BOTÃO LIMPAR */
@@ -353,8 +363,8 @@ body {
   border: none;
   border-radius: 12px;
 
-  background: #eee;
-  color: #555;
+  background: var(--color-secondary);
+  color: var(--color-text);
 
   font-weight: 500;
   cursor: pointer;
@@ -412,7 +422,7 @@ body {
   width: 100%;
   margin-bottom: 12px;
   padding: 12px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--color-secondary);
   border-radius: 12px;
 }
 
@@ -448,7 +458,7 @@ body {
 
 .admin-product-form input {
   padding: 12px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--color-secondary);
   border-radius: 12px;
 }
 
@@ -485,7 +495,7 @@ body {
 
 /* botão adicionar */
 .add-cart-button {
-  background: #eee;
+  background: var(--color-secondary);
   border: none;
 }
 
@@ -517,7 +527,7 @@ body {
 }
 
 .product-actions .add-cart-button {
-  background: #eee;
+  background: var(--color-secondary);
   color: var(--color-text);
   border: none;
 }
@@ -533,7 +543,7 @@ body {
   min-height: 100px;
   resize: vertical;
   padding: 12px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--color-secondary);
   border-radius: 12px;
   font-family: inherit;
 }
@@ -541,7 +551,7 @@ body {
 .product-description {
   margin-top: 14px;
   padding-top: 14px;
-  border-top: 1px solid #eee;
+  border-top: 1px solid var(--color-secondary);
 }
 
 .product-description h3 {
@@ -558,7 +568,7 @@ body {
   min-height: 100px;
   resize: vertical;
   padding: 12px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--color-secondary);
   border-radius: 12px;
   font-family: inherit;
 }
@@ -566,7 +576,7 @@ body {
 .product-description {
   margin-top: 14px;
   padding-top: 14px;
-  border-top: 1px solid #eee;
+  border-top: 1px solid var(--color-secondary);
 }
 
 .product-description h3 {
@@ -590,7 +600,7 @@ body {
   display: flex;
   gap: 12px;
   align-items: center;
-  background: #fff;
+  background: var(--color-white);
   padding: 12px;
   border-radius: 12px;
 }
@@ -639,8 +649,8 @@ body {
 }
 
 .add-cart-button:disabled {
-  background: #ddd;
-  color: #777;
+  background: var(--color-secondary);
+  color: var(--color-text);
   cursor: not-allowed;
 }
 
@@ -652,14 +662,14 @@ body {
 
 /* só quando desabilitado */
 .add-cart-button:disabled {
-  background: #ddd;
-  color: #777;
+  background: var(--color-secondary);
+  color: var(--color-text);
   cursor: not-allowed;
 }
 
 .cancel-edit {
-  background: #eee !important;
-  color: #555 !important;
+  background: var(--color-secondary) !important;
+  color: var(--color-text) !important;
 }
 
 .cart-icon {
@@ -877,7 +887,7 @@ button:active {
 
 .admin-product-form select {
   padding: 12px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--color-secondary);
   border-radius: 12px;
 }
 
@@ -1088,7 +1098,7 @@ button:active {
   gap: 10px;
   align-items: flex-start;
   padding: 12px 0;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--color-secondary);
 }
 
 .cart-info {
@@ -1237,7 +1247,7 @@ body {
   grid-column: 1 / -1;
   text-align: center;
   padding: 40px 16px;
-  color: #6b5f5f;
+  color: var(--color-text);
   font-size: 14px;
 }
 
@@ -1317,14 +1327,14 @@ body {
 .see-more-arrow {
   font-size: 38px;
   font-weight: 800;
-  color: #b89a95;
+  color: var(--color-primary);
   line-height: 1;
   transition: transform 0.2s ease, color 0.2s ease;
 }
 
 .see-more-card:hover .see-more-arrow {
   transform: translateX(4px);
-  color: #9f7f79;
+  color: var(--color-primary);
 }
 
 .launch-card h3,
@@ -1340,8 +1350,8 @@ body {
   padding: 14px;
   border: none;
   border-radius: 16px;
-  background: #c9a39e;
-  color: #fff;
+  background: var(--color-primary);
+  color: var(--color-white);
   font-weight: 700;
   cursor: pointer;
 }
@@ -1354,7 +1364,7 @@ body {
   z-index: 900;
 
   height: 78px;
-  background: #c9a39e;
+  background: var(--color-primary);
   transition: height 0.25s ease, box-shadow 0.25s ease;
 }
 
@@ -1400,7 +1410,7 @@ body {
 .size-modal {
   width: 100%;
   max-width: 340px;
-  background: #fff;
+  background: var(--color-white);
   border-radius: 18px;
   padding: 22px;
   position: relative;
@@ -1423,7 +1433,7 @@ body {
 
 .size-modal p {
   font-size: 14px;
-  color: #6b5f5f;
+  color: var(--color-text);
   margin-bottom: 18px;
 }
 
@@ -1439,14 +1449,14 @@ body {
   min-width: 42px;
   padding: 9px 12px;
   border-radius: 10px;
-  border: 1px solid #d8b9b4;
-  background: #fff;
+  border: 1px solid var(--color-secondary);
+  background: var(--color-white);
   cursor: pointer;
 }
 
 .size-modal-options button.selected {
-  background: #c9a39e;
-  color: #fff;
+  background: var(--color-primary);
+  color: var(--color-white);
 }
 
 .size-modal-confirm {
@@ -1454,8 +1464,8 @@ body {
   padding: 13px;
   border-radius: 12px;
   border: none;
-  background: #c9a39e;
-  color: #fff;
+  background: var(--color-primary);
+  color: var(--color-white);
   font-weight: 700;
   cursor: pointer;
 }
@@ -1483,8 +1493,8 @@ body {
   font-weight: 600;
   text-align: center;
 
-  background: #fff;
-  color: #4b3f3f;
+  background: var(--color-white);
+  color: var(--color-text);
 
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
 
@@ -1492,7 +1502,7 @@ body {
 }
 
 .toast-success {
-  border: 1px solid #c9a39e;
+  border: 1px solid var(--color-primary);
 }
 
 .toast-error {
@@ -1522,7 +1532,7 @@ body {
   background: transparent;
   border: none;
   font-size: 14px;
-  color: #6b5f5f;
+  color: var(--color-text);
   cursor: pointer;
 }
 
@@ -1540,8 +1550,8 @@ body {
   padding: 12px 20px;
   border-radius: 12px;
   border: none;
-  background: #c9a39e;
-  color: #fff;
+  background: var(--color-primary);
+  color: var(--color-white);
   font-weight: 600;
   cursor: pointer;
 }
@@ -1596,8 +1606,7 @@ body {
   z-index: 999;
 
   padding: 12px 16px;
-  background: #f7eeee;
-
+  background: var(--color-background);  
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
 
   animation: searchDown 0.45s ease;
@@ -1613,19 +1622,19 @@ body {
   padding: 12px 18px;
 
   border-radius: 999px;
-  border: 1px solid #d8b9b4;
+  border: 1px solid var(--color-secondary);
 
   outline: none;
 
   font-size: 14px;
-  color: #4b3f3f;
-  background: #fff;
+  color: var(--color-text);
+  background: var(--color-white);
 
   transition: all 0.2s ease;
 }
 
 .search-panel input:focus {
-  border-color: #c9a39e;
+  border-color: var(--color-primary);
   box-shadow: 0 0 0 2px rgba(201, 163, 158, 0.2);
 }
 
@@ -1728,4 +1737,814 @@ body.menu-open,
 html.menu-open {
   overflow: hidden;
   height: 100%;
+}
+
+.admin-login {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top left, rgba(91, 44, 255, 0.22), transparent 32%),
+    radial-gradient(circle at bottom right, rgba(151, 71, 255, 0.18), transparent 34%),
+    linear-gradient(135deg, #f7f4ff 0%, #ffffff 45%, #f3efff 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 28px;
+  position: relative;
+  overflow: hidden;
+}
+
+.admin-login::before {
+  content: "ORBY";
+  position: absolute;
+  right: -40px;
+  bottom: 40px;
+  font-size: 120px;
+  font-weight: 800;
+  letter-spacing: -6px;
+  color: rgba(91, 44, 255, 0.06);
+}
+
+.admin-form {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 380px;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(14px);
+  padding: 34px 26px 28px;
+  border-radius: 28px;
+  box-shadow: 0 24px 80px rgba(91, 44, 255, 0.16);
+  border: 1px solid rgba(91, 44, 255, 0.1);
+}
+
+.orby-login-logo {
+  width: 82px;
+  height: 82px;
+  object-fit: contain;
+  display: block;
+  margin: 0 auto 14px;
+}
+
+.admin-form h1 {
+  text-align: center;
+  margin: 0 0 24px;
+  color: #111827;
+  font-size: 24px;
+  font-weight: 800;
+}
+
+.admin-form h1::after {
+  content: "Sua loja, no próximo nível";
+  display: block;
+  margin-top: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #6b7280;
+}
+
+.admin-form input {
+  width: 100%;
+  padding: 13px 15px;
+  border-radius: 14px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  margin-bottom: 10px;
+  outline: none;
+}
+
+.admin-form input:focus {
+  border-color: #5b2cff;
+  box-shadow: 0 0 0 3px rgba(91, 44, 255, 0.12);
+}
+
+.admin-form button {
+  width: 100%;
+  margin-top: 8px;
+  padding: 14px;
+  border-radius: 14px;
+  border: none;
+  background: linear-gradient(135deg, #5b2cff, #7c3cff);
+  color: white;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.orby-dashboard {
+  min-height: 100vh;
+  padding: 28px 20px;
+  background:
+    radial-gradient(circle at top left, rgba(91, 44, 255, 0.16), transparent 30%),
+    linear-gradient(135deg, #f7f4ff, #ffffff);
+  color: #111827;
+}
+
+.orby-dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start; /* 🔥 sobe tudo */
+  padding: 16px 0 8px; /* 🔥 reduz espaço em cima */
+  margin-bottom: 12px;
+}
+
+.orby-dashboard-header > div {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.orby-label {
+  display: inline-block;
+  margin-bottom: 8px;
+  color: #5b2cff;
+  font-weight: 800;
+  font-size: 13px;
+}
+
+.orby-dashboard-header h1 {
+  margin: 0;
+  font-size: 30px;
+}
+
+.orby-dashboard-header p {
+  margin: 6px 0 0;
+  color: #6b7280;
+}
+
+.orby-logout {
+  border: none;
+  background: #ede9fe;
+  color: #5b2cff;
+  padding: 10px 16px;
+  border-radius: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  margin: 2px;
+}
+
+.orby-stats-grid,
+.orby-actions-grid {
+  max-width: 960px;
+  margin: 0 auto;
+  display: grid;
+  gap: 14px;
+}
+
+.orby-stats-grid {
+  grid-template-columns: repeat(2, 1fr);
+  margin-bottom: 18px;
+}
+
+.orby-stat-card,
+.orby-actions-grid button {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid #e5e7eb;
+  border-radius: 22px;
+  padding: 18px;
+  box-shadow: 0 16px 40px rgba(17, 24, 39, 0.06);
+}
+
+.orby-stat-card span {
+  display: block;
+  color: #6b7280;
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+
+.orby-stat-card strong {
+  font-size: 30px;
+}
+
+.orby-actions-grid {
+  grid-template-columns: 1fr;
+}
+
+.orby-actions-grid button {
+  text-align: left;
+  color: #111827;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.orby-actions-grid small {
+  display: block;
+  margin-top: 6px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+@media (min-width: 720px) {
+  .orby-actions-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.orby-admin-page {
+  min-height: 100vh;
+  padding: 28px 20px;
+  background:
+    radial-gradient(circle at top left, rgba(91, 44, 255, 0.14), transparent 28%),
+    linear-gradient(135deg, #f7f4ff, #ffffff);
+  color: #111827;
+}
+
+.orby-admin-header {
+  max-width: 1080px;
+  margin: 0 auto 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.orby-admin-header h1 {
+  margin: 4px 0 0;
+  font-size: 28px;
+  font-weight: 900;
+  color: #111827;
+}
+
+.orby-admin-header p {
+  margin: 6px 0 0;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.orby-label {
+  color: #5b2cff;
+  font-weight: 800;
+  font-size: 13px;
+}
+
+.orby-secondary-button {
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  color: #111827;
+  padding: 10px 16px;
+  border-radius: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.orby-secondary-button:hover {
+  border-color: #5b2cff;
+  color: #5b2cff;
+}
+.orby-admin-layout {
+  max-width: 1080px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 18px;
+}
+
+.orby-admin-form {
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid #e5e7eb;
+  border-radius: 24px;
+  padding: 22px;
+  box-shadow: 0 18px 50px rgba(17, 24, 39, 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.orby-admin-form input,
+.orby-admin-form textarea,
+.orby-admin-form select {
+  width: 100%;
+  padding: 13px 15px;
+  border-radius: 14px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  color: #111827;
+  outline: none;
+  font-family: inherit;
+}
+
+.orby-admin-form input:focus,
+.orby-admin-form textarea:focus,
+.orby-admin-form select:focus {
+  border-color: #5b2cff;
+  box-shadow: 0 0 0 3px rgba(91, 44, 255, 0.12);
+}
+
+.orby-admin-form textarea {
+  min-height: 110px;
+  resize: vertical;
+}
+
+.orby-admin-form label,
+.product-section-box {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.product-section-box p {
+  margin: 0;
+  font-weight: 700;
+  color: #374151;
+}
+
+.product-section-options {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.orby-admin-form button[type="submit"] {
+  border: none;
+  background: linear-gradient(135deg, #5b2cff, #7c3cff);
+  color: #ffffff;
+  padding: 14px;
+  border-radius: 14px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.orby-admin-list {
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid #e5e7eb;
+  border-radius: 24px;
+  padding: 18px;
+  box-shadow: 0 18px 50px rgba(17, 24, 39, 0.06);
+}
+
+.orby-list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.orby-list-header h2 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.orby-list-header span {
+  color: #6b7280;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.orby-admin-item {
+  display: grid;
+  grid-template-columns: 76px 1fr;
+  gap: 12px;
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 18px;
+  padding: 12px;
+  margin-bottom: 12px;
+}
+
+.orby-admin-item img {
+  width: 76px;
+  height: 92px;
+  object-fit: cover;
+  border-radius: 14px;
+  background: #f3f4f6;
+}
+
+.orby-admin-item strong {
+  display: block;
+  font-size: 15px;
+  margin-bottom: 4px;
+}
+
+.orby-admin-item p {
+  margin: 3px 0;
+  color: #6b7280;
+  font-size: 13px;
+}
+
+.orby-admin-item .admin-actions {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-left: 0;
+}
+
+.orby-admin-item .admin-actions button {
+  border: none;
+  border-radius: 12px;
+  padding: 10px;
+  font-weight: 800;
+  cursor: pointer;
+  background: #f3f4f6;
+  color: #111827;
+}
+
+.orby-admin-item .admin-actions button:first-child {
+  background: #ede9fe;
+  color: #5b2cff;
+}
+
+.orby-admin-item .admin-actions button:last-child {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.cancel-edit {
+  background: #f3f4f6 !important;
+  color: #374151 !important;
+}
+
+@media (min-width: 900px) {
+  .orby-admin-layout {
+    grid-template-columns: 420px 1fr;
+    align-items: start;
+  }
+}
+
+.orby-admin-banner {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 20px;
+  padding: 12px;
+  margin-bottom: 12px;
+  box-shadow: 0 12px 30px rgba(17, 24, 39, 0.04);
+}
+
+.orby-admin-banner img {
+  width: 100%;
+  aspect-ratio: 2 / 1;
+  object-fit: cover;
+  border-radius: 16px;
+  background: #f3f4f6;
+  margin-bottom: 12px;
+}
+
+.orby-banner-info {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+}
+
+.orby-banner-info strong {
+  font-size: 14px;
+  color: #111827;
+}
+
+.orby-admin-banner .admin-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.orby-admin-banner .admin-actions button {
+  border: none;
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-weight: 800;
+  cursor: pointer;
+  background: #ede9fe;
+  color: #5b2cff;
+}
+
+.orby-admin-banner .admin-actions button:last-child {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.product-section-box {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.product-section-box p {
+  margin: 0;
+  font-weight: 700;
+  color: #374151;
+}
+
+.product-section-options {
+  display: flex;
+  gap: 50px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  color: #111827;
+  cursor: pointer;
+}
+
+.sizes-box {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center; 
+  margin-top: 10px;
+}
+
+button:hover {
+  transform: translateY(-1px);
+  transition: 0.2s;
+}
+
+.size-button {
+  min-width: 48px;
+  height: 44px;
+  padding: 0 12px;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  background: #f9fafb;
+  color: #111827;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.size-button:hover {
+  border-color: #5b2cff;
+  color: #5b2cff;
+}
+
+.size-button.active {
+  background: #5b2cff;
+  color: #fff;
+  border-color: #5b2cff;
+}
+
+.product-section-options {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.section-button {
+  padding: 10px 14px;
+  border-radius: 999px;
+  border: 1px solid #e5e7eb;
+  background: #f9fafb;
+  color: #111827;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.section-button:hover {
+  border-color: #5b2cff;
+  color: #5b2cff;
+}
+
+.section-button.active {
+  background: #5b2cff;
+  color: #fff;
+  border-color: #5b2cff;
+}
+
+.orby-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 72px;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid #e5e7eb;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  padding: 0 18px;
+  z-index: 9999;
+}
+
+.orby-header-logo {
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
+  justify-self: center;
+}
+
+.orby-header-back {
+  justify-self: start;
+  border: none;
+  background: transparent;
+  color: #111827;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.orby-header-actions {
+  justify-self: end;
+  display: flex;
+  gap: 8px;
+}
+
+.orby-header-actions button {
+  border: none;
+  padding: 9px 13px;
+  border-radius: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  background: #f3f4f6;
+  color: #111827;
+}
+
+.orby-header-actions .logout {
+  background: #5b2cff;
+  color: white;
+}
+
+.orby-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.orby-header-left img {
+  width: 32px;
+  height: 32px;
+}
+
+.orby-header-left strong {
+  display: block;
+  font-size: 14px;
+}
+
+.orby-header-left span {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.orby-header-right {
+  display: flex;
+  gap: 8px;
+}
+
+.orby-header-right button {
+  border: none;
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  background: #f3f4f6;
+}
+
+.orby-header-right button:hover {
+  background: #e5e7eb;
+}
+
+.orby-header-right .logout {
+  background: #5b2cff;
+  color: white;
+}
+
+.orby-admin-page {
+  padding-top:95px;
+}
+
+.orby-dashboard,
+.orby-admin-page {
+  padding-top: 104px !important;
+}
+
+.orby-hero {
+  margin-bottom: 20px;
+}
+
+.orby-hero-badge {
+  display: inline-block;
+  background: #dcfce7;
+  color: #166534;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.orby-hero h1 {
+  margin: 0;
+  font-size: 30px;
+  font-weight: 900;
+  color: #111827;
+}
+
+.orby-hero p {
+  margin: 6px 0;
+  color: #6b7280;
+}
+
+.orby-hero-sub {
+  display: block;
+  margin-top: 6px;
+  font-size: 14px;
+  color: #5b2cff;
+  font-weight: 600;
+}
+
+.orby-status-inline {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+}
+
+.badge {
+  display: inline-block;
+  background: #dcfce7;
+  color: #166534;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  width: fit-content;
+}
+
+.sub {
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.orby-dashboard {
+  padding-top: 24px !important;
+}
+
+.orby-dashboard-header {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+  align-items: flex-start !important;
+}
+
+.orby-status-inline {
+  margin-top: 0 !important;
+  margin-bottom: 10px !important;
+}
+
+.orby-logout {
+  margin-top: 0 !important;
+}
+
+/* Animação suave ORBY */
+@keyframes orbyFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.orby-dashboard,
+.orby-admin-page {
+  animation: orbyFadeUp 0.45s ease forwards;
+}
+
+.orby-stat-card,
+.orby-actions-grid button,
+.orby-admin-form,
+.orby-admin-list,
+.orby-admin-item,
+.orby-admin-banner {
+  opacity: 0;
+  animation: orbyFadeUp 0.45s ease forwards;
+}
+
+.orby-stat-card:nth-child(1),
+.orby-actions-grid button:nth-child(1) {
+  animation-delay: 0.05s;
+}
+
+.orby-stat-card:nth-child(2),
+.orby-actions-grid button:nth-child(2) {
+  animation-delay: 0.1s;
+}
+
+.orby-stat-card:nth-child(3),
+.orby-actions-grid button:nth-child(3) {
+  animation-delay: 0.15s;
+}
+
+.orby-stat-card:nth-child(4) {
+  animation-delay: 0.2s;
+}
+
+.orby-admin-form {
+  animation-delay: 0.05s;
+}
+
+.orby-admin-list {
+  animation-delay: 0.12s;
+}
+
+.orby-admin-item,
+.orby-admin-banner {
+  animation-delay: 0.08s;
 }

@@ -1,22 +1,29 @@
 import cartIcon from '../assets/cart.png'
 import menuIcon from '../assets/menu.png'
 import { useEffect, useState } from 'react'
-import { collection, getDocs } from 'firebase/firestore'
+import { collection, getDocs, query, where } from 'firebase/firestore'
 import { db } from '../services/firebase'
 import CartDrawer from '../components/CartDrawer'
 import { useCart } from '../context/CartContext'
 import { createPortal } from 'react-dom'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import lupaIcon from '../assets/lupa.png'
 import SearchPanel from '../components/SearchPanel'
+import stores from '../config/stores'
 
 function Products() {
   const { cart, addToCart } = useCart()
+  const navigate = useNavigate()
+  const { storeSlug = 'labany' } = useParams()
+
+  const store = stores[storeSlug] || stores.labany
+  const storePrefix = `/${storeSlug}`
+
   const [scrolled, setScrolled] = useState(false)
   const [products, setProducts] = useState([])
   const [filteredProducts, setFilteredProducts] = useState([])
   const [loading, setLoading] = useState(true)
-  const [addedId,setAddedId] = useState(null)
+  const [addedId, setAddedId] = useState(null)
 
   const [openCart, setOpenCart] = useState(false)
   const [openMenu, setOpenMenu] = useState(false)
@@ -26,7 +33,6 @@ function Products() {
   const [selectedProduct, setSelectedProduct] = useState(null)
   const [selectedSize, setSelectedSize] = useState('')
   const [filterLabel, setFilterLabel] = useState('')
-  const navigate = useNavigate()
   const [visibleCount, setVisibleCount] = useState(10)
   const [openSearch, setOpenSearch] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
@@ -34,39 +40,61 @@ function Products() {
   const cartQuantity = cart.reduce((acc, item) => acc + item.quantity, 0)
 
   useEffect(() => {
-  function handleScroll() {
-    setScrolled(window.scrollY > 20)
-  }
+    if (!store?.colors) return
 
-  window.addEventListener('scroll', handleScroll)
+    const root = document.documentElement
 
-  return () => window.removeEventListener('scroll', handleScroll)
-}, [])
+    root.style.setProperty('--color-primary', store.colors.primary)
+    root.style.setProperty('--color-secondary', store.colors.secondary)
+    root.style.setProperty('--color-background', store.colors.background)
+    root.style.setProperty('--color-text', store.colors.text)
+  }, [store])
 
   useEffect(() => {
-  if (openMenu || openCart) {
-    document.body.classList.add('menu-open')
-    document.documentElement.classList.add('menu-open')
-  } else {
-    document.body.classList.remove('menu-open')
-    document.documentElement.classList.remove('menu-open')
-  }
+    function handleScroll() {
+      setScrolled(window.scrollY > 20)
+    }
 
-  return () => {
-    document.body.classList.remove('menu-open')
-    document.documentElement.classList.remove('menu-open')
-  }
-}, [openMenu, openCart])
+    window.addEventListener('scroll', handleScroll)
+
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
+  useEffect(() => {
+    if (openMenu || openCart) {
+      document.body.classList.add('menu-open')
+      document.documentElement.classList.add('menu-open')
+    } else {
+      document.body.classList.remove('menu-open')
+      document.documentElement.classList.remove('menu-open')
+    }
+
+    return () => {
+      document.body.classList.remove('menu-open')
+      document.documentElement.classList.remove('menu-open')
+    }
+  }, [openMenu, openCart])
 
   useEffect(() => {
     async function loadProducts() {
       try {
-        const snapshot = await getDocs(collection(db, 'products'))
+        setLoading(true)
+
+        const q = query(
+          collection(db, 'products'),
+          where('storeSlug', '==', storeSlug)
+        )
+
+        const snapshot = await getDocs(q)
 
         const data = snapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
         }))
+
+        console.log('STORE SLUG DA URL:', storeSlug)
+        console.log('PRODUTOS ENCONTRADOS:', data.length)
+        console.log(data)
 
         setProducts(data)
         setFilteredProducts(data)
@@ -78,7 +106,7 @@ function Products() {
     }
 
     loadProducts()
-  }, [])
+  }, [storeSlug])
 
   const brands = [...new Set(products.map((p) => p.brand).filter(Boolean))]
   const categories = [...new Set(products.map((p) => p.category).filter(Boolean))]
@@ -101,10 +129,10 @@ function Products() {
 
         <div className="header-center">
           <img
-            src="/logoo.png"
-            alt="LABANY"
+            src={store.logo}
+            alt={store.name}
             className="logo"
-            onClick={() => navigate('/')}
+            onClick={() => navigate(storePrefix)}
           />
         </div>
 
@@ -127,7 +155,7 @@ function Products() {
         setFilteredProducts={setFilteredProducts}
         setActiveFilter={setActiveFilter}
         setFilterLabel={setFilterLabel}
-        />
+      />
 
       <main className="container fade-in">
         <h2 className="section-title">
@@ -142,11 +170,11 @@ function Products() {
               ))}
             </>
           ) : filteredProducts.length > 0 ? (
-           filteredProducts.slice(0, visibleCount).map((product) => (
+            filteredProducts.slice(0, visibleCount).map((product) => (
               <article
                 className={`product-card ${!product.available ? 'unavailable' : ''}`}
                 key={product.id}
-                onClick={() => (window.location.href = `/produto/${product.id}`)}
+                onClick={() => navigate(`${storePrefix}/produto/${product.id}`)}
               >
                 <div className="product-image-wrapper">
                   <img
@@ -201,84 +229,86 @@ function Products() {
               <p>Nenhum produto encontrado.</p>
             </div>
           )}
+
           {selectedProduct &&
             createPortal(
-                <div
+              <div
                 className="size-modal-overlay"
                 onClick={() => setSelectedProduct(null)}
-                >
+              >
                 <div
-                    className="size-modal"
-                    onClick={(e) => e.stopPropagation()}
+                  className="size-modal"
+                  onClick={(e) => e.stopPropagation()}
                 >
-                    <button
+                  <button
                     className="size-modal-close"
                     onClick={() => setSelectedProduct(null)}
-                    >
+                  >
                     ✕
-                    </button>
+                  </button>
 
-                    <h3>Escolha o tamanho</h3>
-                    <p>{selectedProduct.name}</p>
+                  <h3>Escolha o tamanho</h3>
+                  <p>{selectedProduct.name}</p>
 
-                    <div className="size-modal-options">
+                  <div className="size-modal-options">
                     {selectedProduct.sizes?.map((size) => (
-                        <button
+                      <button
                         key={size}
                         className={selectedSize === size ? 'selected' : ''}
                         onClick={() => setSelectedSize(size)}
-                        >
+                      >
                         {size}
-                        </button>
+                      </button>
                     ))}
-                    </div>
+                  </div>
 
-                    <button
+                  <button
                     className={`size-modal-confirm ${
-                        addedId === selectedProduct?.id ? 'added' : ''
+                      addedId === selectedProduct?.id ? 'added' : ''
                     }`}
                     disabled={!selectedSize}
                     onClick={() => {
-                        addToCart({
+                      addToCart({
                         ...selectedProduct,
                         selectedSize,
-                        })
+                      })
 
-                        setAddedId(selectedProduct.id)
+                      setAddedId(selectedProduct.id)
 
-                        setTimeout(() => {
+                      setTimeout(() => {
                         setAddedId(null)
                         setSelectedProduct(null)
                         setSelectedSize('')
-                        }, 800)
+                      }, 800)
                     }}
-                    >
+                  >
                     {addedId === selectedProduct?.id
-                        ? '✔ Adicionado'
-                        : 'Adicionar ao carrinho'}
-                    </button>
+                      ? '✔ Adicionado'
+                      : 'Adicionar ao carrinho'}
+                  </button>
                 </div>
-                </div>,
-                document.body
+              </div>,
+              document.body
             )}
         </section>
+
         {visibleCount < filteredProducts.length && (
-        <div className="load-more">
+          <div className="load-more">
             <button
-            onClick={() => {
+              onClick={() => {
                 setVisibleCount((prev) => prev + 10)
 
                 setTimeout(() => {
-                window.scrollBy({
+                  window.scrollBy({
                     top: 300,
                     behavior: 'smooth',
-                })
+                  })
                 }, 100)
-            }}
+              }}
             >
-            Ver mais
+              Ver mais
             </button>
-        </div>
+          </div>
         )}
       </main>
 
@@ -290,135 +320,135 @@ function Products() {
         </button>
 
         <nav className="menu-list">
-            <button
+          <button
             className="menu-link"
             onClick={() => {
-                window.location.href = '/'
+              window.location.href = `${storePrefix}`
             }}
-            >
+          >
             Home
-            </button>
+          </button>
 
-            <button
-                className="menu-link"
-                onClick={() => {
-                setOpenMenu(false)
-                setTimeout(() => {
-                    navigate('/produtos')
-                }, 150)
-                }}
-            >
-                Todos os produtos
-            </button>
+          <button
+            className="menu-link"
+            onClick={() => {
+              setOpenMenu(false)
+              setTimeout(() => {
+                navigate(`${storePrefix}/produtos`)
+              }, 150)
+            }}
+          >
+            Todos os produtos
+          </button>
 
-            <button
-                className="menu-link"
-                onClick={() => {
-                const filtered = products.filter(
-                    (p) => p.productSection === 'launch'
-                )
-                setVisibleCount(10)
-                setFilteredProducts(filtered)
-                setActiveFilter('launch')
-                setFilterLabel('Lançamentos')
-                setOpenMenu(false)
-                }}
-            >
-                Lançamentos
-            </button>
+          <button
+            className="menu-link"
+            onClick={() => {
+              const filtered = products.filter(
+                (p) => p.productSection === 'launch'
+              )
+              setVisibleCount(10)
+              setFilteredProducts(filtered)
+              setActiveFilter('launch')
+              setFilterLabel('Lançamentos')
+              setOpenMenu(false)
+            }}
+          >
+            Lançamentos
+          </button>
 
-            <button
-                className="menu-link"
-                onClick={() => {
-                const filtered = products.filter(
-                    (p) => p.productSection === 'bestseller'
-                )
-                setVisibleCount(10)
-                setFilteredProducts(filtered)
-                setActiveFilter('bestseller')
-                setFilterLabel('Mais vendidos')
-                setOpenMenu(false)
-                }}
-            >
-                Mais vendidos
-            </button>
+          <button
+            className="menu-link"
+            onClick={() => {
+              const filtered = products.filter(
+                (p) => p.productSection === 'bestseller'
+              )
+              setVisibleCount(10)
+              setFilteredProducts(filtered)
+              setActiveFilter('bestseller')
+              setFilterLabel('Mais vendidos')
+              setOpenMenu(false)
+            }}
+          >
+            Mais vendidos
+          </button>
 
-            <button
-                className="menu-link"
-                onClick={() => {
-                const filtered = products.filter(
-                    (p) => p.productSection === 'outlet'
-                )
-                setVisibleCount(10)
-                setFilteredProducts(filtered)
-                setActiveFilter('outlet')
-                setFilterLabel('Outlet')
-                setOpenMenu(false)
-                }}
-            >
-                Outlet
-            </button>
+          <button
+            className="menu-link"
+            onClick={() => {
+              const filtered = products.filter(
+                (p) => p.productSection === 'outlet'
+              )
+              setVisibleCount(10)
+              setFilteredProducts(filtered)
+              setActiveFilter('outlet')
+              setFilterLabel('Outlet')
+              setOpenMenu(false)
+            }}
+          >
+            Outlet
+          </button>
 
-            <button
-                className="menu-link"
-                onClick={() => setOpenBrands(!openBrands)}
-            >
-                <span>Marcas</span>
-                <span>›</span>
-            </button>
+          <button
+            className="menu-link"
+            onClick={() => setOpenBrands(!openBrands)}
+          >
+            <span>Marcas</span>
+            <span>›</span>
+          </button>
 
-            {openBrands && (
-                <div className="submenu">
-                {brands.map((brand) => (
-                    <button
-                    key={brand}
-                    onClick={() => {
-                        const filtered = products.filter(
-                        (p) => p.brand === brand
-                        )
-                        setVisibleCount(10)
-                        setFilteredProducts(filtered)
-                        setActiveFilter('brand')
-                        setFilterLabel(`Marca > ${brand}`)
-                        setOpenMenu(false)
-                    }}
-                    >
-                    {brand}
-                    </button>
-                ))}
-                </div>
-            )}
+          {openBrands && (
+            <div className="submenu">
+              {brands.map((brand) => (
+                <button
+                  key={brand}
+                  onClick={() => {
+                    const filtered = products.filter(
+                      (p) => p.brand === brand
+                    )
+                    setVisibleCount(10)
+                    setFilteredProducts(filtered)
+                    setActiveFilter('brand')
+                    setFilterLabel(`Marca > ${brand}`)
+                    setOpenMenu(false)
+                  }}
+                >
+                  {brand}
+                </button>
+              ))}
+            </div>
+          )}
 
-            <button
-                className="menu-link"
-                onClick={() => setOpenCategories(!openCategories)}
-            >
-                <span>Peças</span>
-                <span>›</span>
-            </button>
+          <button
+            className="menu-link"
+            onClick={() => setOpenCategories(!openCategories)}
+          >
+            <span>Peças</span>
+            <span>›</span>
+          </button>
 
-            {openCategories && (
-                <div className="submenu">
-                {categories.map((cat) => (
-                    <button
-                    key={cat}
-                    onClick={() => {
-                        const filtered = products.filter(
-                        (p) => p.category === cat
-                        )
-                        setVisibleCount(10)
-                        setFilteredProducts(filtered)
-                        setActiveFilter('category')
-                        setFilterLabel(`Peças > ${cat}`)
-                        setOpenMenu(false)
-                    }}
-                    >
-                    {cat}
-                    </button>
-                ))}
-                </div>
-            )}
-            </nav>
+          {openCategories && (
+            <div className="submenu">
+              {categories.map((cat) => (
+                <button
+                  key={cat}
+                  onClick={() => {
+                    const filtered = products.filter(
+                      (p) => p.category === cat
+                    )
+                    setVisibleCount(10)
+                    setFilteredProducts(filtered)
+                    setActiveFilter('category')
+                    setFilterLabel(`Peças > ${cat}`)
+                    setOpenMenu(false)
+                  }}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+          )}
+        </nav>
       </div>
 
       {openMenu && (
