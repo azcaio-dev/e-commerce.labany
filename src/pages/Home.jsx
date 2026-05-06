@@ -450,7 +450,13 @@ function Home() {
             <div className="view-all-wrapper fade-in">
               <button
                 className="view-all-products"
-                onClick={() => navigate(`${storePrefix}/produtos`)}
+                onClick={() => {
+                  navigate(`${storePrefix}/produtos`)
+
+                  setTimeout(() => {
+                    window.scrollTo(0, 0)
+                  }, 100)
+                }}
               >
                 Ver todos os produtos
               </button>
