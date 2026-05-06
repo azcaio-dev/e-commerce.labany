@@ -96,12 +96,23 @@ Pode me ajudar com o pagamento e entrega?`
                   </div>
                 </div>
 
-                <p className="cart-price">
-                  {Number(item.price).toLocaleString('pt-BR', {
-                    style: 'currency',
-                    currency: 'BRL',
-                  })}
-                </p>
+                <div className="cart-price-box">
+                  {item.productSection === 'outlet' && item.oldPrice && (
+                    <span className="cart-old-price">
+                      {Number(item.oldPrice).toLocaleString('pt-BR', {
+                        style: 'currency',
+                        currency: 'BRL',
+                      })}
+                    </span>
+                  )}
+
+                  <strong className="cart-current-price">
+                    {Number(item.price).toLocaleString('pt-BR', {
+                      style: 'currency',
+                      currency: 'BRL',
+                    })}
+                  </strong>
+                </div>
               </div>
             </div>
           ))}

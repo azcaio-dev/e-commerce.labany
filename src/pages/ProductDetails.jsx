@@ -144,9 +144,23 @@ Tamanho: ${selectedSize || '-'}`
           </div>
         </section>
 
-        <section className="product-content">
+       <section className="product-content">
           <h1>{product.name}</h1>
-          <strong>{formattedPrice}</strong>
+
+          <div className="product-price-box">
+            {product.productSection === 'outlet' && product.oldPrice && (
+              <span className="product-old-price">
+                {Number(product.oldPrice).toLocaleString('pt-BR', {
+                  style: 'currency',
+                  currency: 'BRL',
+                })}
+              </span>
+            )}
+
+            <strong className="product-current-price">
+              {formattedPrice}
+            </strong>
+          </div>
 
           <div className="product-description">
             <h3>Descrição</h3>
