@@ -25,6 +25,7 @@ function AdminProducts() {
   const categoryLabel = store.menu?.categoriesLabel || 'Peças'
 
   const [name, setName] = useState('')
+  const [oldPrice, setOldPrice] = useState('')
   const [price, setPrice] = useState('')
   const [description, setDescription] = useState('')
   const [file1, setFile1] = useState(null)
@@ -185,6 +186,7 @@ function AdminProducts() {
 
   function clearForm() {
     setName('')
+    setOldPrice('')
     setPrice('')
     setDescription('')
     setFile1(null)
@@ -200,6 +202,7 @@ function AdminProducts() {
   function handleEdit(product) {
     setEditingId(product.id)
     setName(product.name || '')
+    setOldPrice(product.oldPrice ?? '')
     setPrice(product.price || '')
     setDescription(product.description || '')
     setBrand(product.brand || '')
@@ -231,6 +234,7 @@ function AdminProducts() {
       if (editingId) {
         const updatedData = {
           name,
+          oldPrice: oldPrice ? Number(oldPrice) : null,
           price: Number(price),
           description,
           brand,
@@ -268,6 +272,7 @@ function AdminProducts() {
 
         await addDoc(collection(db, 'stores', storeSlug, 'products'), {
           name,
+          oldPrice: oldPrice ? Number(oldPrice) : null,
           price: Number(price),
           description,
           brand,
@@ -333,7 +338,14 @@ function AdminProducts() {
 
             <input
               type="number"
-              placeholder="Preço"
+              placeholder="Preço antigo (opcional)"
+              value={oldPrice}
+              onChange={(e) => setOldPrice(e.target.value)}
+            />
+
+            <input
+              type="number"
+              placeholder="Preço atual"
               value={price}
               onChange={(e) => setPrice(e.target.value)}
               required
