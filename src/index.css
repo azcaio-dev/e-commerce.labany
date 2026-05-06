@@ -870,19 +870,51 @@ button:active {
   object-fit: cover;
 }
 
-.launch-card div {
+.launch-card > div {
   padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .launch-card h3 {
-  margin: 0 0 4px;
+  margin: 0;
   font-size: 13px;
+  line-height: 1.2;
+
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+
+  overflow: hidden;
+  min-height: 32px;
 }
 
 .launch-card p {
   margin: 0;
   font-size: 14px;
   font-weight: 700;
+}
+
+.price-box {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.old-price {
+  font-size: 12px;
+  color: #999;
+  text-decoration: line-through;
+  line-height: 1;
+  margin: 0;
+}
+
+.current-price {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1;
+  margin: 0;
 }
 
 .admin-product-form select {
@@ -2577,4 +2609,80 @@ button:hover {
 
 .product-details {
   padding-top: 16px;
+}
+
+.launch-card {
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: flex-start !important;
+}
+
+.launch-card > div {
+  padding: 8px !important;
+  display: block !important;
+  height: auto !important;
+  min-height: 0 !important;
+}
+
+.launch-card h3 {
+  margin: 0 0 4px 0 !important;
+  padding: 0 !important;
+  font-size: 11px !important;
+  line-height: 1.1 !important;
+  min-height: auto !important;
+}
+
+.launch-card .price-box {
+  margin: 0 !important;
+  padding: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 1px !important;
+  height: auto !important;
+  min-height: 0 !important;
+}
+
+.launch-card .old-price {
+  margin: 0 !important;
+  padding: 0 !important;
+  font-size: 10px !important;
+  line-height: 1 !important;
+  color: #999 !important;
+  text-decoration: line-through !important;
+}
+
+.launch-card .current-price {
+  margin: 0 !important;
+  padding: 0 !important;
+  font-size: 12px !important;
+  line-height: 1 !important;
+  font-weight: 700 !important;
+}
+
+.product-card .product-info {
+  padding: 10px 12px 12px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 3px !important;
+  justify-content: flex-start !important;
+}
+
+.product-card .product-info h3 {
+  margin: 0 !important;
+  padding: 0 !important;
+  line-height: 1.2 !important;
+  min-height: auto !important;
+}
+
+.product-card .price-box {
+  margin: 0 !important;
+  padding: 0 !important;
+  gap: 1px !important;
+}
+
+.product-card .old-price,
+.product-card .current-price {
+  margin: 0 !important;
+  padding: 0 !important;
+  line-height: 1.1 !important;
 }

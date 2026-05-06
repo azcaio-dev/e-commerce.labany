@@ -348,12 +348,24 @@ function Home() {
 
                     <div>
                       <h3>{product.name}</h3>
-                      <p>
-                        {Number(product.price).toLocaleString('pt-BR', {
-                          style: 'currency',
-                          currency: 'BRL',
-                        })}
-                      </p>
+
+                      <div className="price-box">
+                        {product.oldPrice && (
+                          <span className="old-price">
+                            {Number(product.oldPrice).toLocaleString('pt-BR', {
+                              style: 'currency',
+                              currency: 'BRL',
+                            })}
+                          </span>
+                        )}
+
+                        <strong className="current-price">
+                          {Number(product.price).toLocaleString('pt-BR', {
+                            style: 'currency',
+                            currency: 'BRL',
+                          })}
+                        </strong>
+                      </div>
                     </div>
                   </article>
                 ))}
@@ -407,12 +419,30 @@ function Home() {
                     <div className="product-info">
                       <h3>{product.name}</h3>
 
-                      <p>
-                        {Number(product.price).toLocaleString('pt-BR', {
-                          style: 'currency',
-                          currency: 'BRL',
-                        })}
-                      </p>
+                      {product.productSection === 'outlet' && product.oldPrice ? (
+                        <div className="price-box">
+                          <span className="old-price">
+                            {Number(product.oldPrice).toLocaleString('pt-BR', {
+                              style: 'currency',
+                              currency: 'BRL',
+                            })}
+                          </span>
+
+                          <strong className="current-price">
+                            {Number(product.price).toLocaleString('pt-BR', {
+                              style: 'currency',
+                              currency: 'BRL',
+                            })}
+                          </strong>
+                        </div>
+                      ) : (
+                        <p>
+                          {Number(product.price).toLocaleString('pt-BR', {
+                            style: 'currency',
+                            currency: 'BRL',
+                          })}
+                        </p>
+                      )}
                     </div>
 
                     {activeFilter !== 'search' && (
