@@ -129,16 +129,6 @@ function Home() {
       return () => clearInterval(interval)
     }, [banners])
 
-  useEffect(() => {
-    if (banners.length <= 1) return
-
-    const interval = setInterval(() => {
-      setCurrentBanner((prev) => (prev + 1) % banners.length)
-    }, 3500)
-
-    return () => clearInterval(interval)
-  }, [banners])
-
   const brands = [...new Set(products.map((p) => p.brand).filter(Boolean))]
   const categories = [...new Set(products.map((p) => p.category).filter(Boolean))]
 
