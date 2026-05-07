@@ -117,6 +117,18 @@ function Home() {
     loadBanners()
   }, [storeSlug])
 
+    useEffect(() => {
+      if (banners.length <= 1) return
+
+      const interval = setInterval(() => {
+        setCurrentBanner((prev) =>
+          prev === banners.length - 1 ? 0 : prev + 1
+        )
+      }, 4000)
+
+      return () => clearInterval(interval)
+    }, [banners])
+
   useEffect(() => {
     if (banners.length <= 1) return
 
@@ -220,11 +232,22 @@ function Home() {
 
         {!activeFilter && banners.length > 0 && (
           <section className="banner-carousel fade-in">
-            <img
-              src={banners[currentBanner].image}
-              alt={`Banner ${store.name}`}
-              className="banner-image"
-            />
+            <div
+              className="banner-track"
+              style={{
+                transform: `translateX(-${currentBanner * 100}%)`,
+              }}
+            >
+              {banners.map((banner) => (
+                <div className="banner-slide" key={banner.id}>
+                  <img
+                    src={banner.image}
+                    alt={`Banner ${store.name}`}
+                    className="banner-image"
+                  />
+                </div>
+              ))}
+            </div>
 
             {banners.length > 1 && (
               <div className="banner-dots">
