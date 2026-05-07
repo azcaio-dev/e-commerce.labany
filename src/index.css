@@ -2829,3 +2829,54 @@ button:hover {
 .banner-dots button.active {
   background: #fff;
 }
+
+.footer {
+  padding: 52px 24px 28px;
+  margin-top: 60px;
+}
+
+.footer-logo {
+  width: 95px;
+  margin-bottom: 18px;
+}
+
+.footer-description {
+  color: rgba(255,255,255,0.72);
+  font-size: 14px;
+  line-height: 1.6;
+  margin-bottom: 28px;
+}
+
+.footer-links {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 34px;
+}
+
+.footer-links a {
+  color: #fff;
+  text-decoration: none;
+
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  font-size: 14px;
+
+  transition: opacity 0.25s ease;
+}
+
+.footer-links a:hover {
+  opacity: 0.65;
+}
+
+.footer-links img {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+}
+
+.footer-copy {
+  color: rgba(255,255,255,0.45);
+  font-size: 12px;
+}
