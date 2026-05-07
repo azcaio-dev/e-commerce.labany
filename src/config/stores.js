@@ -88,6 +88,36 @@ const stores = {
       messageIntro: "Olá! Quero comprar uma camisa na JM Camisas:",
     },
   },
+
+  bella: {
+    name: "Bella Moda Fitness",
+    title: "Bella Moda Fitness | Moda Fitness",
+    tagline: "Moda fitness com conforto e estilo",
+    logo: "/stores/bella/logo.png",
+    whatsapp: "5581XXXXXXXXX",
+    instagram: "https://www.instagram.com/SEUINSTAGRAM/",
+    email: "contato@bellafitness.com.br",
+
+    productsCollection: "stores/bella/products",
+    bannersCollection: "stores/bella/banners",
+
+    menu: {
+      showBrands: false,
+      showCategories: true,
+      categoriesLabel: "Categorias",
+    },
+
+    colors: {
+      primary: "#fc58d6",
+      secondary: "#f8e866",
+      background: "#fffdf4",
+      text: "#8b5a62",
+    },
+
+    checkout: {
+      messageIntro: "Olá! Quero finalizar meu pedido:",
+    },
+  },
 }
 
 export default stores
