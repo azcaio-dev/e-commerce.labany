@@ -228,8 +228,11 @@ function Home() {
                 transform: `translateX(-${currentBanner * 100}%)`,
               }}
             >
-              {banners.map((banner) => (
-                <div className="banner-slide" key={banner.id}>
+              {banners.map((banner, index) => (
+                <div
+                  className={`banner-slide ${index === currentBanner ? 'active' : ''}`}
+                  key={banner.id}
+                >
                   <img
                     src={banner.image}
                     alt={`Banner ${store.name}`}
