@@ -977,7 +977,7 @@ button:active {
 
 @media (max-width: 768px) {
   .banner-carousel {
-    width: calc(100% - 32px);
+    width: 100%;
     aspect-ratio: 16 / 8;
     margin: 8px auto 24px;
     border-radius: 14px;
