@@ -2767,7 +2767,7 @@ button:hover {
 }
 
 .banner-carousel {
-  width: calc(100% - 32px);
+  width: 100%;
   max-width: 1200px;
   aspect-ratio: 16 / 8;
   margin: 2px auto 20px;
