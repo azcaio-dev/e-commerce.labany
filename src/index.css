@@ -986,11 +986,17 @@ button:active {
   box-shadow: 0 4px 14px rgba(79, 63, 60, 0.08);
 }
 
+@media (max-width: 768px) {
+  .banner-carousel {
+    height: 140px;
+  }
+}
+
 .banner-image {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  display: block;
+  object-position: center;
 }
 
 .banner-dots {
