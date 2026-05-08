@@ -2774,6 +2774,8 @@ button:hover {
   overflow: hidden;
   position: relative;
   border-radius: 16px;
+  transform: translateZ(0);     
+  -webkit-transform: translateZ(0);
 }
 
 .banner-track {
