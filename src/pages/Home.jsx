@@ -222,12 +222,7 @@ function Home() {
 
         {!activeFilter && banners.length > 0 && (
           <section className="banner-carousel fade-in">
-            <div
-              className="banner-track"
-              style={{
-                transform: `translateX(-${currentBanner * 100}%)`,
-              }}
-            >
+            <div className="banner-track">
               {banners.map((banner, index) => (
                 <div
                   className={`banner-slide ${index === currentBanner ? 'active' : ''}`}
