@@ -975,37 +975,18 @@ button:active {
   opacity: 0.7;
 }
 
-.banner-carousel {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 2 / 1;
-  margin-bottom: 24px;
-  border-radius: 18px;
-  overflow: hidden;
-  background: var(--color-secondary);
-  box-shadow: 0 4px 14px rgba(79, 63, 60, 0.08);
-}
-
 @media (max-width: 768px) {
   .banner-carousel {
-    height: 140px;
+    width: calc(100% - 32px);
+    aspect-ratio: 16 / 8;
+    margin: 2px auto 20px;
+    border-radius: 14px;
   }
-}
 
-.banner-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center;
-}
-
-.banner-dots {
-  position: absolute;
-  left: 50%;
-  bottom: 10px;
-  transform: translateX(-50%);
-  display: flex;
-  gap: 6px;
+  .banner-image {
+    object-fit: cover;
+    object-position: center;
+  }
 }
 
 .banner-dots button {
@@ -2783,14 +2764,13 @@ button:hover {
 }
 
 .banner-carousel {
-  width: 100%;
-  height: 180px;
+  width: calc(100% - 32px);
+  max-width: 1200px;
+  aspect-ratio: 16 / 8;
+  margin: 2px auto 20px;
   overflow: hidden;
   position: relative;
   border-radius: 16px;
-  background: transparent;
-  padding: 0;
-  margin: 18px 0 24px;
 }
 
 .banner-track {
@@ -2809,8 +2789,8 @@ button:hover {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center;
   display: block;
-  border-radius: 16px;
 }
 
 .banner-dots {
