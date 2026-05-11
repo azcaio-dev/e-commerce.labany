@@ -6,15 +6,16 @@ import { useCart } from '../context/CartContext'
 import CartDrawer from '../components/CartDrawer'
 import cartIcon from '../assets/cart.png'
 import Toast from '../components/Toast'
-import stores from '../config/stores'
+import useStore from '../hooks/useStore'
 import useStoreTheme from '../hooks/useStoreTheme'
 
 function ProductDetails() {
-  const { storeSlug = 'labany', id } = useParams()
   const navigate = useNavigate()
   const { cart, addToCart } = useCart()
 
-  const store = stores[storeSlug] || stores.labany
+  const { id } = useParams()
+
+  const { store, loading: storeLoading, storeSlug } = useStore()
 
   useStoreTheme(store)
 
@@ -71,6 +72,57 @@ function ProductDetails() {
 
     loadProduct()
   }, [storeSlug, id])
+
+  if (storeLoading || !store) {
+    return null
+  }
+
+  if (store.active === false) {
+    return (
+      <main
+        style={{
+          minHeight: '100vh',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          flexDirection: 'column',
+          gap: '16px',
+          background: store.colors?.background || '#fff',
+          color: store.colors?.text || '#111',
+          padding: '24px',
+          textAlign: 'center',
+        }}
+      >
+        <img
+          src={store.logo}
+          alt={store.name}
+          style={{
+            width: '120px',
+            objectFit: 'contain',
+          }}
+        />
+
+        <h1
+          style={{
+            fontSize: '28px',
+            margin: 0,
+          }}
+        >
+          Loja temporariamente indisponível
+        </h1>
+
+        <p
+          style={{
+            maxWidth: '420px',
+            opacity: 0.7,
+            lineHeight: 1.6,
+          }}
+        >
+          Esta loja está desativada no momento. Tente novamente mais tarde.
+        </p>
+      </main>
+    )
+  }
 
   if (loading) {
     return (
@@ -132,6 +184,7 @@ Tamanho: ${selectedSize || '-'}`
               src={product.image}
               alt={product.name}
               onClick={() => setSelectedImage(product.image)}
+              loading="lazy"
             />
 
             {product.image2 && (
@@ -139,6 +192,7 @@ Tamanho: ${selectedSize || '-'}`
                 src={product.image2}
                 alt={product.name}
                 onClick={() => setSelectedImage(product.image2)}
+                loading="lazy"
               />
             )}
           </div>

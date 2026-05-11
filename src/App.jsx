@@ -7,12 +7,21 @@ import AdminBanners from './pages/AdminBanners'
 import AdminDashboard from './pages/AdminDashboard'
 import Footer from "./components/footer.jsx";
 import Products from './pages/Products'
+import OrbyAdminDashboard from './pages/OrbyAdminDashboard'
+import OrbyCreateStore from './pages/OrbyCreateStore'
+import OrbyEditStore from './pages/OrbyEditStore'
+import Landing from './pages/Landing'
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Home />} />
+
+        <Route path="/orby-admin/dashboard" element={<OrbyAdminDashboard />} />
+        <Route path="/orby-admin/criar-loja" element={<OrbyCreateStore />} />
+        <Route path="/orby-admin/editar-loja/:storeSlug" element={<OrbyEditStore />} />
+
+        <Route path="/" element={<Landing />} />
         <Route path="/:storeSlug" element={<Home />} />
 
         <Route path="/produtos" element={<Products />} />
@@ -29,8 +38,9 @@ function App() {
         <Route path="/admin/:storeSlug/banners" element={<AdminBanners />} />
       </Routes>
 
-      {!window.location.pathname.startsWith('/admin') && <Footer />}
-    </BrowserRouter>
+      {!window.location.pathname.startsWith('/admin') &&
+      !window.location.pathname.startsWith('/admin') && window.location.pathname !== '/' && <Footer />}
+     </BrowserRouter>
   )
 }
 

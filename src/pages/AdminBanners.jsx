@@ -161,6 +161,7 @@ function AdminBanners() {
               <img
                 src={banner.image}
                 alt="Banner"
+                loading='lazy'
                 onError={(e) => {
                   e.target.src = '/placeholder.png'
                 }}

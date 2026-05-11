@@ -1,10 +1,8 @@
 import { useCart } from '../context/CartContext'
-import { useParams } from 'react-router-dom'
-import stores from '../config/stores'
+import useStore from '../hooks/useStore'
 
 function CartDrawer({ open, onClose }) {
-  const { storeSlug = 'labany' } = useParams()
-  const store = stores[storeSlug] || stores.labany
+  const { store, loading: storeLoading } = useStore()
 
   const {
     cart,
@@ -12,6 +10,10 @@ function CartDrawer({ open, onClose }) {
     increaseQuantity,
     decreaseQuantity,
   } = useCart()
+
+  if (storeLoading || !store) {
+    return null
+  }
 
   const total = cart.reduce((acc, item) => {
     let price = item.price
@@ -75,7 +77,12 @@ Pode me ajudar com o pagamento e entrega?`
               key={`${item.id}-${item.selectedSize || 'sem-tamanho'}-${index}`}
               className="cart-item"
             >
-              <img src={item.image} alt={item.name} className="cart-item-image" />
+              <img 
+              src={item.image} 
+              alt={item.name} 
+              className="cart-item-image"
+              loading='lazy'
+              />
 
               <div className="cart-info">
                 <strong className="cart-product-name">{item.name}</strong>

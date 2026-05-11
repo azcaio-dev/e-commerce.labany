@@ -7,19 +7,17 @@ import cartIcon from '../assets/cart.png'
 import menuIcon from '../assets/menu.png'
 import lupaIcon from '../assets/lupa.png'
 import SearchPanel from '../components/SearchPanel'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { createPortal } from 'react-dom'
-import stores from '../config/stores'
+import useStore from '../hooks/useStore'
 import useStoreTheme from '../hooks/useStoreTheme'
 
 function Home() {
   const { cart, addToCart } = useCart()
   const navigate = useNavigate()
-  const { storeSlug = 'labany' } = useParams()
+ const { store, loading: storeLoading, storeSlug } = useStore()
 
-  const store = stores[storeSlug] || stores.labany
-  const storePrefix = `/${storeSlug}`
-
+const storePrefix = `/${storeSlug}`
   useStoreTheme(store)
 
   const [openCart, setOpenCart] = useState(false)
@@ -159,6 +157,57 @@ function Home() {
     navigate(storePrefix)
   }
 
+  if (storeLoading || !store) {
+    return null
+  }
+
+  if (store.active === false) {
+    return (
+      <main
+        style={{
+          minHeight: '100vh',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          flexDirection: 'column',
+          gap: '16px',
+          background: store.colors?.background || '#fff',
+          color: store.colors?.text || '#111',
+          padding: '24px',
+          textAlign: 'center',
+        }}
+      >
+        <img
+          src={store.logo}
+          alt={store.name}
+          style={{
+            width: '120px',
+            objectFit: 'contain',
+          }}
+        />
+
+        <h1
+          style={{
+            fontSize: '28px',
+            margin: 0,
+          }}
+        >
+          Loja temporariamente indisponível
+        </h1>
+
+        <p
+          style={{
+            maxWidth: '420px',
+            opacity: 0.7,
+            lineHeight: 1.6,
+          }}
+        >
+          Esta loja está desativada no momento. Tente novamente mais tarde.
+        </p>
+      </main>
+    )
+  }
+
   return (
     <div>
       <header className={`header ${scrolled ? 'scrolled' : ''}`}>
@@ -263,7 +312,10 @@ function Home() {
                     className="launch-card"
                     onClick={() => goToProduct(product.id)}
                   >
-                    <img src={product.image} alt={product.name} />
+                    <img 
+                      src={product.image}
+                      alt={product.name} 
+                      loading= "lazy" />
 
                     <div>
                       <h3>{product.name}</h3>
@@ -420,6 +472,7 @@ function Home() {
                         src={product.image}
                         alt={product.name}
                         className="product-image"
+                        loading='lazy'
                       />
 
                       {!product.available && (

@@ -9,20 +9,20 @@ import {
 } from 'firebase/firestore'
 import { db } from '../services/firebase'
 import { onAuthStateChanged } from 'firebase/auth'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { auth } from '../services/firebase'
 import Toast from '../components/Toast'
 import AdminHeader from '../components/AdminHeader'
-import stores from '../config/stores'
+import useStore from '../hooks/useStore'
 
 function AdminProducts() {
   const [products, setProducts] = useState([])
   const [editingId, setEditingId] = useState(null)
-  const { storeSlug = 'labany' } = useParams()
-  const store = stores[storeSlug] || stores.labany
 
-  const brandLabel = store.menu?.brandsLabel || 'Marca'
-  const categoryLabel = store.menu?.categoriesLabel || 'Peças'
+  const { store, loading: storeLoading, storeSlug } = useStore()
+
+  const brandLabel = store?.menu?.brandsLabel || 'Marca'
+  const categoryLabel = store?.menu?.categoriesLabel || 'Peças'
 
   const [name, setName] = useState('')
   const [oldPrice, setOldPrice] = useState('')
@@ -36,7 +36,10 @@ function AdminProducts() {
   const [productSection, setProductSection] = useState('')
   const [sizeType, setSizeType] = useState('letter')
   const [sizes, setSizes] = useState([])
-  const [toast, setToast] = useState({ message: '', type: 'success' })
+  const [toast, setToast] = useState({
+    message: '',
+    type: 'success',
+  })
 
   const navigate = useNavigate()
   const formRef = useRef(null)
@@ -45,12 +48,20 @@ function AdminProducts() {
     setToast({ message, type })
 
     setTimeout(() => {
-      setToast({ message: '', type: 'success' })
+      setToast({
+        message: '',
+        type: 'success',
+      })
     }, 2500)
   }
 
-  const brands = [...new Set(products.map((p) => p.brand).filter(Boolean))]
-  const categories = [...new Set(products.map((p) => p.category).filter(Boolean))]
+  const brands = [
+    ...new Set(products.map((p) => p.brand).filter(Boolean)),
+  ]
+
+  const categories = [
+    ...new Set(products.map((p) => p.category).filter(Boolean)),
+  ]
 
   const letterSizes = ['PP', 'P', 'M', 'G', 'GG', 'XG']
   const numberSizes = ['34', '36', '38', '40', '42', '44', '46']
@@ -71,7 +82,9 @@ function AdminProducts() {
   }
 
   useEffect(() => {
-    document.title = `Produtos - ${store.name}`
+    if (store) {
+      document.title = `Produtos - ${store.name}`
+    }
   }, [store])
 
   useEffect(() => {
@@ -114,75 +127,92 @@ function AdminProducts() {
     fetchProducts()
   }, [storeSlug])
 
-  function compressImage(file, maxWidth = 1000, quality = 0.75) {
-  return new Promise((resolve, reject) => {
-    const img = new Image()
-    const reader = new FileReader()
+  function compressImage(
+    file,
+    maxWidth = 1000,
+    quality = 0.75
+  ) {
+    return new Promise((resolve, reject) => {
+      const img = new Image()
+      const reader = new FileReader()
 
-    reader.onload = (e) => {
-      img.src = e.target.result
-    }
+      reader.onload = (e) => {
+        img.src = e.target.result
+      }
 
-    img.onload = () => {
-      const canvas = document.createElement('canvas')
+      img.onload = () => {
+        const canvas = document.createElement('canvas')
 
-      const scale = Math.min(maxWidth / img.width, 1)
-      canvas.width = img.width * scale
-      canvas.height = img.height * scale
+        const scale = Math.min(maxWidth / img.width, 1)
 
-      const ctx = canvas.getContext('2d')
-      ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
+        canvas.width = img.width * scale
+        canvas.height = img.height * scale
 
-      canvas.toBlob(
-        (blob) => {
-          if (!blob) {
-            reject(new Error('Erro ao comprimir imagem'))
-            return
-          }
+        const ctx = canvas.getContext('2d')
 
-          const compressedFile = new File(
-            [blob],
-            file.name.replace(/\.[^/.]+$/, '.webp'),
-            { type: 'image/webp' }
-          )
+        ctx.drawImage(
+          img,
+          0,
+          0,
+          canvas.width,
+          canvas.height
+        )
 
-          resolve(compressedFile)
-        },
-        'image/webp',
-        quality
-      )
-    }
+        canvas.toBlob(
+          (blob) => {
+            if (!blob) {
+              reject(
+                new Error('Erro ao comprimir imagem')
+              )
+              return
+            }
 
-    img.onerror = reject
-    reader.onerror = reject
+            const compressedFile = new File(
+              [blob],
+              file.name.replace(/\.[^/.]+$/, '.webp'),
+              {
+                type: 'image/webp',
+              }
+            )
 
-    reader.readAsDataURL(file)
-  })
-}
+            resolve(compressedFile)
+          },
+          'image/webp',
+          quality
+        )
+      }
 
-  const uploadImage = async (file) => {
-  const compressedFile = await compressImage(file)
+      img.onerror = reject
+      reader.onerror = reject
 
-  const formData = new FormData()
-  formData.append('file', compressedFile)
-  formData.append('upload_preset', 'loja-labany')
-
-  const response = await fetch(
-    'https://api.cloudinary.com/v1_1/dcqroxlt0/image/upload',
-    {
-      method: 'POST',
-      body: formData,
-    }
-  )
-
-  const data = await response.json()
-
-  if (!response.ok) {
-    throw new Error(data.error?.message)
+      reader.readAsDataURL(file)
+    })
   }
 
-  return data.secure_url
-}
+  const uploadImage = async (file) => {
+    const compressedFile = await compressImage(file)
+
+    const formData = new FormData()
+
+    formData.append('file', compressedFile)
+    formData.append('upload_preset', 'loja-labany')
+
+    const response = await fetch(
+      'https://api.cloudinary.com/v1_1/dcqroxlt0/image/upload',
+      {
+        method: 'POST',
+        body: formData,
+      }
+    )
+
+    const data = await response.json()
+
+    if (!response.ok) {
+      throw new Error(data.error?.message)
+    }
+
+    return data.secure_url
+  }
 
   function clearForm() {
     setName('')
@@ -201,6 +231,7 @@ function AdminProducts() {
 
   function handleEdit(product) {
     setEditingId(product.id)
+
     setName(product.name || '')
     setOldPrice(product.oldPrice ?? '')
     setPrice(product.price || '')
@@ -224,7 +255,10 @@ function AdminProducts() {
     e.preventDefault()
 
     if (sizes.length === 0) {
-      showToast('Selecione pelo menos um tamanho', 'warning')
+      showToast(
+        'Selecione pelo menos um tamanho',
+        'warning'
+      )
       return
     }
 
@@ -234,7 +268,9 @@ function AdminProducts() {
       if (editingId) {
         const updatedData = {
           name,
-          oldPrice: oldPrice ? Number(oldPrice) : null,
+          oldPrice: oldPrice
+            ? Number(oldPrice)
+            : null,
           price: Number(price),
           description,
           brand,
@@ -253,15 +289,29 @@ function AdminProducts() {
         }
 
         await updateDoc(
-          doc(db, 'stores', storeSlug, 'products', editingId),
+          doc(
+            db,
+            'stores',
+            storeSlug,
+            'products',
+            editingId
+          ),
           updatedData
         )
 
-        showToast('Produto atualizado com sucesso!', 'success')
+        showToast(
+          'Produto atualizado com sucesso!',
+          'success'
+        )
       } else {
         if (!file1 || !file2) {
-          showToast('Selecione as duas imagens', 'warning')
+          showToast(
+            'Selecione as duas imagens',
+            'warning'
+          )
+
           setLoading(false)
+
           return
         }
 
@@ -270,48 +320,84 @@ function AdminProducts() {
           uploadImage(file2),
         ])
 
-        await addDoc(collection(db, 'stores', storeSlug, 'products'), {
-          name,
-          oldPrice: oldPrice ? Number(oldPrice) : null,
-          price: Number(price),
-          description,
-          brand,
-          category,
-          productSection,
-          sizeType,
-          sizes,
-          image: image1,
-          image2,
-          available: true,
-        })
+        await addDoc(
+          collection(
+            db,
+            'stores',
+            storeSlug,
+            'products'
+          ),
+          {
+            name,
+            oldPrice: oldPrice
+              ? Number(oldPrice)
+              : null,
+            price: Number(price),
+            description,
+            brand,
+            category,
+            productSection,
+            sizeType,
+            sizes,
+            image: image1,
+            image2,
+            available: true,
+          }
+        )
 
-        showToast('Produto cadastrado com sucesso!', 'success')
+        showToast(
+          'Produto cadastrado com sucesso!',
+          'success'
+        )
       }
 
       clearForm()
+
       e.target.reset()
+
       loadProducts()
     } catch (error) {
       console.error(error)
-      showToast('Erro ao salvar produto', 'error')
+
+      showToast(
+        'Erro ao salvar produto',
+        'error'
+      )
     }
 
     setLoading(false)
   }
 
   async function handleDelete(id) {
-    if (!confirm('Deseja excluir este produto?')) return
+    if (!confirm('Deseja excluir este produto?'))
+      return
 
-    await deleteDoc(doc(db, 'stores', storeSlug, 'products', id))
+    await deleteDoc(
+      doc(db, 'stores', storeSlug, 'products', id)
+    )
+
     loadProducts()
   }
 
   async function toggleAvailable(product) {
-    await updateDoc(doc(db, 'stores', storeSlug, 'products', product.id), {
-      available: !product.available,
-    })
+    await updateDoc(
+      doc(
+        db,
+        'stores',
+        storeSlug,
+        'products',
+        product.id
+      ),
+      {
+        available: !product.available,
+      }
+    )
 
     loadProducts()
+  }
+
+  if (storeLoading || !store) {
+    return null
   }
 
   return (
@@ -322,12 +408,20 @@ function AdminProducts() {
         <section className="orby-admin-header">
           <div>
             <h1>Produtos</h1>
-            <p>Cadastre, edite e gerencie os produtos da {store.name}.</p>
+
+            <p>
+              Cadastre, edite e gerencie os produtos
+              da {store.name}.
+            </p>
           </div>
         </section>
 
         <section className="orby-admin-layout">
-          <form ref={formRef} onSubmit={handleSubmit} className="orby-admin-form">
+          <form
+            ref={formRef}
+            onSubmit={handleSubmit}
+            className="orby-admin-form"
+          >
             <input
               type="text"
               placeholder="Nome"
@@ -481,7 +575,11 @@ function AdminProducts() {
 
             {products.map((product) => (
               <div key={product.id} className="orby-admin-item">
-                <img src={product.image} alt={product.name} />
+                <img 
+                src={product.image} 
+                alt={product.name}
+                loading='lazy'
+                />
 
                 <div>
                   <strong>{product.name}</strong>

@@ -16,22 +16,37 @@ function AdminLogin() {
 
   async function handleLogin(e) {
     e.preventDefault()
+
     setError('')
 
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password)
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      )
 
       const userRef = doc(db, 'users', userCredential.user.uid)
       const userSnap = await getDoc(userRef)
 
       if (!userSnap.exists()) {
-        setError('Usuário sem loja vinculada.')
+        setError('Usuário sem permissão.')
         return
       }
 
       const userData = userSnap.data()
 
-      navigate(`/admin/${userData.storeSlug}/dashboard`)
+      if (userData.role === 'orbyOwner') {
+        navigate('/orby-admin/dashboard')
+        return
+      }
+
+      if (userData.storeSlug) {
+        navigate(`/admin/${userData.storeSlug}/dashboard`)
+        return
+      }
+
+      setError('Usuário sem loja vinculada.')
     } catch {
       setError('E-mail ou senha inválidos')
     }
@@ -40,10 +55,14 @@ function AdminLogin() {
   return (
     <main className="admin-login">
       <form onSubmit={handleLogin} className="admin-form">
-        <img src="/logo-orby.png" alt="ORBY" className="orby-login-logo" />
+        <img
+          src="/logo-orby.png"
+          alt="ORBY"
+          className="orby-login-logo"
+        />
 
         <h1>ORBY | Login</h1>
-        
+
         <input
           type="email"
           placeholder="E-mail"
@@ -60,7 +79,9 @@ function AdminLogin() {
 
         {error && <p className="admin-error">{error}</p>}
 
-        <button type="submit">Entrar</button>
+        <button type="submit">
+          Entrar
+        </button>
       </form>
     </main>
   )

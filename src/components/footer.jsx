@@ -1,56 +1,62 @@
 import whatsappIcon from '../assets/whatsapp.png'
 import instagramIcon from '../assets/instagram.png'
-import { useLocation } from 'react-router-dom'
-import stores from '../config/stores'
+import useStore from '../hooks/useStore'
 
 function Footer() {
-  const location = useLocation()
+  const { store, loading } = useStore()
 
-  const storeSlug = location.pathname.split('/')[1] || 'labany'
-  const store = stores[storeSlug] || stores.labany
+  if (loading || !store) {
+    return null
+  }
 
   return (
-    <footer className="footer">
-        <div className="footer-content">
+    <footer
+      className="footer"
+      style={{
+        backgroundColor: store.colors?.primary || '#000',
+      }}
+    >
+      <div className="footer-content">
 
-          <img
-            src={store.logo}
-            alt={store.name}
-            className="footer-logo"
-          />
+        <img
+          src={store.logo}
+          alt={store.name}
+          className="footer-logo"
+          loading='lazy'
+        />
 
-          <p className="footer-description">
-            {store.tagline}
-          </p>
+        <p className="footer-description">
+          {store.tagline}
+        </p>
 
-          <div className="footer-links">
+        <div className="footer-links">
 
-              <a
-                href={`https://wa.me/${store.whatsapp}`}
-                target="_blank"
-                rel="noreferrer"
-              >
-                <img src={whatsappIcon} alt="WhatsApp" />
-                WhatsApp
-              </a>
+          <a
+            href={`https://wa.me/${store.whatsapp}`}
+            target="_blank"
+            rel="noreferrer"
+          >
+            <img src={whatsappIcon} alt="WhatsApp" />
+            WhatsApp
+          </a>
 
-              <a
-                href={store.instagram}
-                target="_blank"
-                rel="noreferrer"
-              >
-                <img src={instagramIcon} alt="Instagram" />
-                Instagram
-              </a>
-
-            </div>
-
-          <p className="footer-copy">
-            © {new Date().getFullYear()} {store.name}
-          </p>
+          <a
+            href={store.instagram}
+            target="_blank"
+            rel="noreferrer"
+          >
+            <img src={instagramIcon} alt="Instagram" />
+            Instagram
+          </a>
 
         </div>
-      </footer>
+
+        <p className="footer-copy">
+          © {new Date().getFullYear()} {store.name}
+        </p>
+
+      </div>
+    </footer>
   )
 }
 

@@ -3,13 +3,13 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { signOut, onAuthStateChanged } from 'firebase/auth'
 import { collection, doc, getDoc, getDocs } from 'firebase/firestore'
 import { auth, db } from '../services/firebase'
-import stores from '../config/stores'
 
 function AdminDashboard() {
   const navigate = useNavigate()
   const { storeSlug } = useParams()
 
-  const store = stores[storeSlug]
+  const [store, setStore] = useState(null)
+  const [storeLoading, setStoreLoading] = useState(true)
 
   const [stats, setStats] = useState({
     products: 0,
@@ -38,6 +38,11 @@ function AdminDashboard() {
 
       const userData = userSnap.data()
 
+      if (userData.role === 'orbyOwner') {
+        setCheckingAuth(false)
+        return
+      }
+
       if (userData.storeSlug !== storeSlug) {
         navigate(`/admin/${userData.storeSlug}/dashboard`)
         return
@@ -48,6 +53,25 @@ function AdminDashboard() {
 
     return () => unsubscribe()
   }, [navigate, storeSlug])
+
+  useEffect(() => {
+    async function loadStore() {
+      try {
+        const storeRef = doc(db, 'stores', storeSlug)
+        const storeSnap = await getDoc(storeRef)
+
+        if (storeSnap.exists()) {
+          setStore(storeSnap.data())
+        }
+      } catch (error) {
+        console.error('Erro ao carregar loja:', error)
+      } finally {
+        setStoreLoading(false)
+      }
+    }
+
+    loadStore()
+  }, [storeSlug])
 
   useEffect(() => {
     if (checkingAuth) return
@@ -88,7 +112,7 @@ function AdminDashboard() {
     navigate('/admin/login')
   }
 
-  if (checkingAuth) {
+  if (checkingAuth || storeLoading) {
     return (
       <main className="orby-dashboard">
         <p>Verificando acesso...</p>
