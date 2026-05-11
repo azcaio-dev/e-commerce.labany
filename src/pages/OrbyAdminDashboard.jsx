@@ -8,9 +8,13 @@ import {
   getDoc,
   setDoc,
 } from 'firebase/firestore'
-import { signOut, onAuthStateChanged } from 'firebase/auth'
+import {
+  signOut,
+  onAuthStateChanged,
+  createUserWithEmailAndPassword,
+} from 'firebase/auth'
+import { auth, db, secondaryAuth } from '../services/firebase'
 import { useNavigate } from 'react-router-dom'
-import { auth, db } from '../services/firebase'
 
 function OrbyAdminDashboard() {
   const navigate = useNavigate()
@@ -112,88 +116,115 @@ function OrbyAdminDashboard() {
     }
   }
 
-  async function duplicateStore(store) {
-    const newName = prompt('Nome da nova loja:')
+ async function duplicateStore(store) {
+  const newName = prompt('Nome da nova loja:')
 
-    if (!newName) return
+  if (!newName) return
 
-    const newSlug = prompt('Slug da nova loja:')
+  const newSlug = prompt('Slug da nova loja:')
 
-    if (!newSlug) return
+  if (!newSlug) return
 
-    const whatsapp = prompt('WhatsApp da nova loja:') || ''
-    const instagram = prompt('Instagram da nova loja:') || ''
+  const whatsapp = prompt('WhatsApp da nova loja:') || ''
+  const instagram = prompt('Instagram da nova loja:') || ''
 
-    const copyProducts = confirm(
-      'Deseja copiar os produtos da loja original?'
-    )
+  const adminEmail = prompt('E-mail de acesso do admin da loja:')
 
-    const copyBanners = confirm(
-      'Deseja copiar os banners da loja original?'
-    )
-
-    try {
-      const originalRef = doc(db, 'stores', store.id)
-      const originalSnap = await getDoc(originalRef)
-
-      if (!originalSnap.exists()) {
-        alert('Loja original não encontrada')
-        return
-      }
-
-      const originalData = originalSnap.data()
-
-      await setDoc(doc(db, 'stores', newSlug), {
-        ...originalData,
-
-        name: newName,
-        title: `${newName} | ORBY`,
-        whatsapp,
-        instagram,
-        active: true,
-      })
-
-      if (copyProducts) {
-        const productsSnapshot = await getDocs(
-          collection(db, 'stores', store.id, 'products')
-        )
-
-        for (const productDoc of productsSnapshot.docs) {
-          await setDoc(
-            doc(db, 'stores', newSlug, 'products', productDoc.id),
-            productDoc.data()
-          )
-        }
-      }
-
-      if (copyBanners) {
-        const bannersSnapshot = await getDocs(
-          collection(db, 'stores', store.id, 'banners')
-        )
-
-        for (const bannerDoc of bannersSnapshot.docs) {
-          await setDoc(
-            doc(db, 'stores', newSlug, 'banners', bannerDoc.id),
-            bannerDoc.data()
-          )
-        }
-      }
-
-      const snapshot = await getDocs(collection(db, 'stores'))
-
-      const data = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }))
-
-      setStores(data)
-
-      alert('Loja duplicada com sucesso!')
-    } catch (error) {
-      console.error(error)
-      alert('Erro ao duplicar loja')
-    }
+  if (!adminEmail) {
+    alert('Informe o e-mail do admin da loja')
+    return
   }
+
+  const adminPassword = prompt('Senha do admin da loja:')
+
+  if (!adminPassword || adminPassword.length < 6) {
+    alert('A senha precisa ter pelo menos 6 caracteres')
+    return
+  }
+
+  const copyProducts = confirm(
+    'Deseja copiar os produtos da loja original?'
+  )
+
+  const copyBanners = confirm(
+    'Deseja copiar os banners da loja original?'
+  )
+
+  try {
+    const originalRef = doc(db, 'stores', store.id)
+    const originalSnap = await getDoc(originalRef)
+
+    if (!originalSnap.exists()) {
+      alert('Loja original não encontrada')
+      return
+    }
+
+    const originalData = originalSnap.data()
+
+    await setDoc(doc(db, 'stores', newSlug), {
+      ...originalData,
+      name: newName,
+      title: `${newName} | ORBY`,
+      whatsapp,
+      instagram,
+      active: true,
+    })
+
+    if (copyProducts) {
+      const productsSnapshot = await getDocs(
+        collection(db, 'stores', store.id, 'products')
+      )
+
+      for (const productDoc of productsSnapshot.docs) {
+        await setDoc(
+          doc(db, 'stores', newSlug, 'products', productDoc.id),
+          productDoc.data()
+        )
+      }
+    }
+
+    if (copyBanners) {
+      const bannersSnapshot = await getDocs(
+        collection(db, 'stores', store.id, 'banners')
+      )
+
+      for (const bannerDoc of bannersSnapshot.docs) {
+        await setDoc(
+          doc(db, 'stores', newSlug, 'banners', bannerDoc.id),
+          bannerDoc.data()
+        )
+      }
+    }
+
+    const newUserCredential = await createUserWithEmailAndPassword(
+      secondaryAuth,
+      adminEmail,
+      adminPassword
+    )
+
+    await setDoc(doc(db, 'users', newUserCredential.user.uid), {
+      storeSlug: newSlug,
+    })
+
+    await signOut(secondaryAuth)
+
+    const snapshot = await getDocs(collection(db, 'stores'))
+
+    const data = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }))
+
+    setStores(data)
+
+    alert(
+      `Loja duplicada com sucesso!\n\nLogin criado:\n${adminEmail}\nSenha: ${adminPassword}`
+    )
+  } catch (error) {
+    console.error(error)
+    alert('Erro ao duplicar loja ou criar login')
+  }
+}
 
   async function handleLogout() {
     await signOut(auth)
