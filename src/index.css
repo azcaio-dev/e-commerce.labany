@@ -2153,23 +2153,10 @@ html.menu-open {
 }
 
 .orby-admin-item .admin-actions button {
-  border: none;
   border-radius: 12px;
   padding: 10px;
-  font-weight: 800;
+  font-weight: 500;
   cursor: pointer;
-  background: #f3f4f6;
-  color: #111827;
-}
-
-.orby-admin-item .admin-actions button:first-child {
-  background: #ede9fe;
-  color: #5b2cff;
-}
-
-.orby-admin-item .admin-actions button:last-child {
-  background: #fee2e2;
-  color: #991b1b;
 }
 
 .cancel-edit {
@@ -2999,3 +2986,169 @@ button:hover {
 .landing-page .footer-copy {
   color: var(--orby-muted) !important;
 }
+
+/* ─── ORBY ADMIN DASHBOARD — MELHORIAS DE COR E LAYOUT ─── */
+
+/* Stats: 3 colunas */
+.orby-stats-grid {
+  grid-template-columns: repeat(3, 1fr);
+  margin-bottom: 18px;
+}
+
+/* Pontinhos de status nos cards */
+.orby-stat-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  margin-right: 5px;
+  vertical-align: middle;
+}
+.orby-stat-dot--active  { background: #5cb87a; }
+.orby-stat-dot--inactive { background: #bbb; }
+
+/* Botão Sair — mais discreto */
+.orby-logout {
+  border: 0.5px solid rgba(91, 44, 255, 0.22) !important;
+  background: rgba(91, 44, 255, 0.07) !important;
+  color: #5340a8 !important;
+  font-weight: 500 !important;
+  padding: 10px 16px;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+/* Header da lista com botão Nova loja */
+.orby-list-header h2 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  font-size: 18px;
+}
+
+.orby-list-header h2 span {
+  font-size: 13px;
+  font-weight: 400;
+  color: #6b7280;
+}
+
+.orby-nova-loja-btn {
+  background: rgba(91, 44, 255, 0.08);
+  color: #5340a8;
+  border: 0.5px solid rgba(91, 44, 255, 0.25);
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.orby-nova-loja-btn:hover {
+  background: rgba(91, 44, 255, 0.13);
+}
+
+/* Info do item de loja */
+.orby-admin-item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+/* Pill de status na loja */
+.orby-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 3px 9px;
+  border-radius: 999px;
+  width: fit-content;
+  margin-top: 4px;
+}
+
+.orby-status-pill--active {
+  background: rgba(92, 184, 122, 0.12);
+  color: #2d7a4f;
+  border: 0.5px solid rgba(92, 184, 122, 0.35);
+}
+
+.orby-status-pill--inactive {
+  background: rgba(107, 114, 128, 0.1);
+  color: #6b7280;
+  border: 0.5px solid rgba(107, 114, 128, 0.25);
+}
+
+.orby-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  display: inline-block;
+}
+
+/* ─── Botões de ação das lojas ─── */
+.orby-admin-item .admin-actions {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-left: 0;
+}
+
+.admin-btn {
+  border-radius: 12px;
+  padding: 10px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: 0.15s ease;
+  border: 0.5px solid transparent;
+  text-align: center;
+}
+
+/* Primário: Ver loja */
+.admin-btn--primary {
+  background: rgba(91, 44, 255, 0.08);
+  color: #5340a8;
+  border-color: rgba(91, 44, 255, 0.22);
+}
+
+.admin-btn--primary:hover {
+  background: rgba(91, 44, 255, 0.13);
+}
+
+/* Neutro: Painel da loja, Editar, Duplicar */
+.admin-btn--neutral {
+  background: rgba(0, 0, 0, 0.03);
+  color: #374151;
+  border-color: #e5e7eb;
+}
+
+.admin-btn--neutral:hover {
+  background: #f3f4f6;
+  border-color: #d1d5db;
+}
+
+.admin-btn--danger {
+  background: rgba(192, 57, 43, 0.08);
+  color: #b91c1c;
+  border: 0.5px solid rgba(192, 57, 43, 0.18);
+}
+
+.admin-btn--danger:hover {
+  background: rgba(192, 57, 43, 0.1);
+}
+
+.admin-btn--danger-outline {
+  background: rgba(192, 57, 43, 0.05);
+  color: #b91c1c;
+  border: 0.5px solid rgba(192, 57, 43, 0.18);
+}
+
+.admin-btn--danger-outline:hover {
+  background: rgba(192, 57, 43, 0.05);
+}
+

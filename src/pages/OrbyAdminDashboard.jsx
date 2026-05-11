@@ -8,13 +8,9 @@ import {
   getDoc,
   setDoc,
 } from 'firebase/firestore'
-import {
-  signOut,
-  onAuthStateChanged,
-  createUserWithEmailAndPassword,
-} from 'firebase/auth'
-import { auth, db, secondaryAuth } from '../services/firebase'
+import { signOut, onAuthStateChanged } from 'firebase/auth'
 import { useNavigate } from 'react-router-dom'
+import { auth, db } from '../services/firebase'
 
 function OrbyAdminDashboard() {
   const navigate = useNavigate()
@@ -116,115 +112,87 @@ function OrbyAdminDashboard() {
     }
   }
 
- async function duplicateStore(store) {
-  const newName = prompt('Nome da nova loja:')
+  async function duplicateStore(store) {
+    const newName = prompt('Nome da nova loja:')
 
-  if (!newName) return
+    if (!newName) return
 
-  const newSlug = prompt('Slug da nova loja:')
+    const newSlug = prompt('Slug da nova loja:')
 
-  if (!newSlug) return
+    if (!newSlug) return
 
-  const whatsapp = prompt('WhatsApp da nova loja:') || ''
-  const instagram = prompt('Instagram da nova loja:') || ''
+    const whatsapp = prompt('WhatsApp da nova loja:') || ''
+    const instagram = prompt('Instagram da nova loja:') || ''
 
-  const adminEmail = prompt('E-mail de acesso do admin da loja:')
-
-  if (!adminEmail) {
-    alert('Informe o e-mail do admin da loja')
-    return
-  }
-
-  const adminPassword = prompt('Senha do admin da loja:')
-
-  if (!adminPassword || adminPassword.length < 6) {
-    alert('A senha precisa ter pelo menos 6 caracteres')
-    return
-  }
-
-  const copyProducts = confirm(
-    'Deseja copiar os produtos da loja original?'
-  )
-
-  const copyBanners = confirm(
-    'Deseja copiar os banners da loja original?'
-  )
-
-  try {
-    const originalRef = doc(db, 'stores', store.id)
-    const originalSnap = await getDoc(originalRef)
-
-    if (!originalSnap.exists()) {
-      alert('Loja original não encontrada')
-      return
-    }
-
-    const originalData = originalSnap.data()
-
-    await setDoc(doc(db, 'stores', newSlug), {
-      ...originalData,
-      name: newName,
-      title: `${newName} | ORBY`,
-      whatsapp,
-      instagram,
-      active: true,
-    })
-
-    if (copyProducts) {
-      const productsSnapshot = await getDocs(
-        collection(db, 'stores', store.id, 'products')
-      )
-
-      for (const productDoc of productsSnapshot.docs) {
-        await setDoc(
-          doc(db, 'stores', newSlug, 'products', productDoc.id),
-          productDoc.data()
-        )
-      }
-    }
-
-    if (copyBanners) {
-      const bannersSnapshot = await getDocs(
-        collection(db, 'stores', store.id, 'banners')
-      )
-
-      for (const bannerDoc of bannersSnapshot.docs) {
-        await setDoc(
-          doc(db, 'stores', newSlug, 'banners', bannerDoc.id),
-          bannerDoc.data()
-        )
-      }
-    }
-
-    const newUserCredential = await createUserWithEmailAndPassword(
-      secondaryAuth,
-      adminEmail,
-      adminPassword
+    const copyProducts = confirm(
+      'Deseja copiar os produtos da loja original?'
     )
 
-    await setDoc(doc(db, 'users', newUserCredential.user.uid), {
-      storeSlug: newSlug,
-    })
-
-    await signOut(secondaryAuth)
-
-    const snapshot = await getDocs(collection(db, 'stores'))
-
-    const data = snapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }))
-
-    setStores(data)
-
-    alert(
-      `Loja duplicada com sucesso!\n\nLogin criado:\n${adminEmail}\nSenha: ${adminPassword}`
+    const copyBanners = confirm(
+      'Deseja copiar os banners da loja original?'
     )
-  } catch (error) {
-    console.error(error)
-    alert('Erro ao duplicar loja ou criar login')
+
+    try {
+      const originalRef = doc(db, 'stores', store.id)
+      const originalSnap = await getDoc(originalRef)
+
+      if (!originalSnap.exists()) {
+        alert('Loja original não encontrada')
+        return
+      }
+
+      const originalData = originalSnap.data()
+
+      await setDoc(doc(db, 'stores', newSlug), {
+        ...originalData,
+        name: newName,
+        title: `${newName} | ORBY`,
+        whatsapp,
+        instagram,
+        active: true,
+      })
+
+      if (copyProducts) {
+        const productsSnapshot = await getDocs(
+          collection(db, 'stores', store.id, 'products')
+        )
+
+        for (const productDoc of productsSnapshot.docs) {
+          await setDoc(
+            doc(db, 'stores', newSlug, 'products', productDoc.id),
+            productDoc.data()
+          )
+        }
+      }
+
+      if (copyBanners) {
+        const bannersSnapshot = await getDocs(
+          collection(db, 'stores', store.id, 'banners')
+        )
+
+        for (const bannerDoc of bannersSnapshot.docs) {
+          await setDoc(
+            doc(db, 'stores', newSlug, 'banners', bannerDoc.id),
+            bannerDoc.data()
+          )
+        }
+      }
+
+      const snapshot = await getDocs(collection(db, 'stores'))
+
+      const data = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }))
+
+      setStores(data)
+
+      alert('Loja duplicada com sucesso!')
+    } catch (error) {
+      console.error(error)
+      alert('Erro ao duplicar loja')
+    }
   }
-}
 
   async function handleLogout() {
     await signOut(auth)
@@ -263,31 +231,35 @@ function OrbyAdminDashboard() {
         </div>
 
         <div className="orby-stat-card">
-          <span>Lojas ativas</span>
+          <span>
+            <span className="orby-stat-dot orby-stat-dot--active" />
+            Lojas ativas
+          </span>
           <strong>
             {stores.filter((store) => store.active !== false).length}
           </strong>
         </div>
 
         <div className="orby-stat-card">
-          <span>Lojas inativas</span>
+          <span>
+            <span className="orby-stat-dot orby-stat-dot--inactive" />
+            Lojas inativas
+          </span>
           <strong>
             {stores.filter((store) => store.active === false).length}
           </strong>
         </div>
       </section>
 
-      <section className="orby-actions-grid">
-        <button onClick={() => navigate('/orby-admin/criar-loja')}>
-          Criar nova loja
-          <small>Cadastrar uma nova loja na ORBY</small>
-        </button>
-      </section>
-
       <section className="orby-admin-list">
         <div className="orby-list-header">
-          <h2>Lojas cadastradas</h2>
-          <span>{stores.length} loja(s)</span>
+          <h2>Lojas cadastradas <span>{stores.length} loja(s)</span></h2>
+          <button
+            className="orby-nova-loja-btn"
+            onClick={() => navigate('/orby-admin/criar-loja')}
+          >
+            + Nova loja
+          </button>
         </div>
 
         {stores.map((store) => (
@@ -298,46 +270,56 @@ function OrbyAdminDashboard() {
               loading="lazy"
             />
 
-            <div>
+            <div className="orby-admin-item-info">
               <strong>{store.name}</strong>
-
               <p>{store.tagline}</p>
-
               <p>Slug: {store.id}</p>
-
-              <p>{store.active === false ? 'Inativa' : 'Ativa'}</p>
+              <span className={`orby-status-pill ${store.active === false ? 'orby-status-pill--inactive' : 'orby-status-pill--active'}`}>
+                <span className="orby-status-dot" />
+                {store.active === false ? 'Inativa' : 'Ativa'}
+              </span>
             </div>
 
             <div className="admin-actions">
-              <button onClick={() => navigate(`/${store.id}`)}>
+              <button
+                className="admin-btn admin-btn--primary"
+                onClick={() => navigate(`/${store.id}`)}
+              >
                 Ver loja
               </button>
 
               <button
-                onClick={() =>
-                  navigate(`/admin/${store.id}/dashboard`)
-                }
+                className="admin-btn admin-btn--neutral"
+                onClick={() => navigate(`/admin/${store.id}/dashboard`)}
               >
                 Painel da loja
               </button>
 
               <button
-                onClick={() =>
-                  navigate(`/orby-admin/editar-loja/${store.id}`)
-                }
+                className="admin-btn admin-btn--neutral"
+                onClick={() => navigate(`/orby-admin/editar-loja/${store.id}`)}
               >
                 Editar
               </button>
 
-              <button onClick={() => deleteStore(store)}>
+              <button
+                className="admin-btn admin-btn--danger-outline"
+                onClick={() => deleteStore(store)}
+              >
                 Excluir
               </button>
 
-              <button onClick={() => duplicateStore(store)}>
+              <button
+                className="admin-btn admin-btn--neutral"
+                onClick={() => duplicateStore(store)}
+              >
                 Duplicar
               </button>
 
-              <button onClick={() => toggleStoreStatus(store)}>
+              <button
+                className="admin-btn admin-btn--danger"
+                onClick={() => toggleStoreStatus(store)}
+              >
                 {store.active === false ? 'Ativar' : 'Inativar'}
               </button>
             </div>
