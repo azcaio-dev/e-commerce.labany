@@ -315,7 +315,7 @@ const storePrefix = `/${storeSlug}`
                     <img 
                       src={product.image}
                       alt={product.name} 
-                      loading= "lazy" />
+                      loading="lazy" />
 
                     <div>
                       <h3>{product.name}</h3>
@@ -344,6 +344,44 @@ const storePrefix = `/${storeSlug}`
                     <span className="see-more-arrow">›</span>
                   </article>
                 )}
+              </div>
+            </div>
+          </section>
+        )}
+
+        {!loading && !activeFilter && (
+          <section className="trust-section fade-in">
+            <div className="trust-grid">
+              <div className="trust-item">
+                <div className="trust-icon">
+                  <img src="/escudo.png" alt="" />
+                </div>
+                <p className="trust-label">Compra segura</p>
+                <p className="trust-desc">Seus dados protegidos</p>
+              </div>
+
+              <div className="trust-item">
+                <div className="trust-icon">
+                  <img src="/whatsapp.png" alt="" />
+                </div>
+                <p className="trust-label">Compre pelo Whatsapp</p>
+                <p className="trust-desc">Você pode comprar pelo Whatsapp</p>
+              </div>
+
+              <div className="trust-item">
+                <div className="trust-icon">
+                  <img src="/entrega-rapida.png" alt="" />
+                </div>
+                <p className="trust-label">Entrega rápida</p>
+                <p className="trust-desc">Entregamos em todo o Brasil</p>
+              </div>
+
+              <div className="trust-item">
+                <div className="trust-icon">
+                  <img src="/envio-gratis.png" alt="" />
+                </div>
+                <p className="trust-label">Frete grátis</p>
+                <p className="trust-desc">A partir de R$ 195,00</p>
               </div>
             </div>
           </section>
@@ -396,62 +434,69 @@ const storePrefix = `/${storeSlug}`
         )}
 
         {!loading && !activeFilter && outlet.length > 0 && (
-          <section className="launch-section fade-in">
-            <h2>Outlet</h2>
+            <section className="launch-section fade-in">
+              <h2>Outlet</h2>
 
-            <div className="horizontal-wrapper">
-              <div className="launch-list">
-                {outlet.slice(0, 6).map((product) => (
-                  <article
-                    key={product.id}
-                    className="launch-card"
-                    onClick={() => goToProduct(product.id)}
-                  >
-                    <img src={product.image} alt={product.name} />
+              <div className="horizontal-wrapper">
+                <div className="launch-list">
+                  {outlet.slice(0, 6).map((product) => (
+                    <article
+                      key={product.id}
+                      className="launch-card"
+                      style={{ position: 'relative' }}
+                      onClick={() => goToProduct(product.id)}
+                    >
+                      <img src={product.image} alt={product.name} />
 
-                    <div>
-                      <h3>{product.name}</h3>
+                      {product.oldPrice && (
+                        <span className="discount-badge">
+                          {Math.round((1 - product.price / product.oldPrice) * 100)}%
+                        </span>
+                      )}
 
-                      <div className="price-box">
-                        {product.oldPrice && (
-                          <span className="old-price">
-                            {Number(product.oldPrice).toLocaleString('pt-BR', {
+                      <div>
+                        <h3>{product.name}</h3>
+
+                        <div className="price-box">
+                          {product.oldPrice && (
+                            <span className="old-price">
+                              {Number(product.oldPrice).toLocaleString('pt-BR', {
+                                style: 'currency',
+                                currency: 'BRL',
+                              })}
+                            </span>
+                          )}
+
+                          <strong className="current-price">
+                            {Number(product.price).toLocaleString('pt-BR', {
                               style: 'currency',
                               currency: 'BRL',
                             })}
-                          </span>
-                        )}
-
-                        <strong className="current-price">
-                          {Number(product.price).toLocaleString('pt-BR', {
-                            style: 'currency',
-                            currency: 'BRL',
-                          })}
-                        </strong>
+                          </strong>
+                        </div>
                       </div>
-                    </div>
-                  </article>
-                ))}
+                    </article>
+                  ))}
 
-                {outlet.length > 6 && (
-                  <article
-                    className="see-more-card"
-                    onClick={() => {
-                      setFilteredProducts(
-                        products.filter((p) => p.productSection === 'outlet')
-                      )
-                      setActiveFilter('outlet')
-                      setFilterLabel('Outlet')
-                      window.scrollTo({ top: 0, behavior: 'smooth' })
-                    }}
-                  >
-                    <span className="see-more-arrow">›</span>
-                  </article>
-                )}
+                  {outlet.length > 6 && (
+                    <article
+                      className="see-more-card"
+                      onClick={() => {
+                        setFilteredProducts(
+                          products.filter((p) => p.productSection === 'outlet')
+                        )
+                        setActiveFilter('outlet')
+                        setFilterLabel('Outlet')
+                        window.scrollTo({ top: 0, behavior: 'smooth' })
+                      }}
+                    >
+                      <span className="see-more-arrow">›</span>
+                    </article>
+                  )}
+                </div>
               </div>
-            </div>
-          </section>
-        )}
+            </section>
+          )}
 
         {activeFilter ? (
           <>
