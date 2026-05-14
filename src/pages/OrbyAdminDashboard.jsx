@@ -8,9 +8,13 @@ import {
   getDoc,
   setDoc,
 } from 'firebase/firestore'
-import { signOut, onAuthStateChanged } from 'firebase/auth'
+import {
+  signOut,
+  onAuthStateChanged,
+  createUserWithEmailAndPassword,
+} from 'firebase/auth'
 import { useNavigate } from 'react-router-dom'
-import { auth, db } from '../services/firebase'
+import { auth, secondaryAuth, db } from '../services/firebase'
 
 function OrbyAdminDashboard() {
   const navigate = useNavigate()
@@ -92,18 +96,14 @@ function OrbyAdminDashboard() {
   }
 
   async function deleteStore(store) {
-    const confirmDelete = confirm(
-      `Deseja excluir a loja "${store.name}"?`
-    )
+    const confirmDelete = confirm(`Deseja excluir a loja "${store.name}"?`)
 
     if (!confirmDelete) return
 
     try {
       await deleteDoc(doc(db, 'stores', store.id))
 
-      setStores((prev) =>
-        prev.filter((item) => item.id !== store.id)
-      )
+      setStores((prev) => prev.filter((item) => item.id !== store.id))
 
       alert('Loja excluída com sucesso!')
     } catch (error) {
@@ -124,6 +124,34 @@ function OrbyAdminDashboard() {
     const whatsapp = prompt('WhatsApp da nova loja:') || ''
     const instagram = prompt('Instagram da nova loja:') || ''
 
+    const shouldCreateLogin = confirm(
+      'Deseja criar login e senha para o admin dessa loja?'
+    )
+
+    let adminEmail = ''
+    let adminPassword = ''
+
+    if (shouldCreateLogin) {
+      adminEmail = prompt('E-mail de login do admin da loja:')
+
+      if (!adminEmail) {
+        alert('E-mail não informado. A loja não foi duplicada.')
+        return
+      }
+
+      adminPassword = prompt('Senha do admin da loja:')
+
+      if (!adminPassword) {
+        alert('Senha não informada. A loja não foi duplicada.')
+        return
+      }
+
+      if (adminPassword.length < 6) {
+        alert('A senha precisa ter pelo menos 6 caracteres.')
+        return
+      }
+    }
+
     const copyProducts = confirm(
       'Deseja copiar os produtos da loja original?'
     )
@@ -133,6 +161,14 @@ function OrbyAdminDashboard() {
     )
 
     try {
+      const newStoreRef = doc(db, 'stores', newSlug)
+      const newStoreSnap = await getDoc(newStoreRef)
+
+      if (newStoreSnap.exists()) {
+        alert('Já existe uma loja com esse slug.')
+        return
+      }
+
       const originalRef = doc(db, 'stores', store.id)
       const originalSnap = await getDoc(originalRef)
 
@@ -143,7 +179,7 @@ function OrbyAdminDashboard() {
 
       const originalData = originalSnap.data()
 
-      await setDoc(doc(db, 'stores', newSlug), {
+      await setDoc(newStoreRef, {
         ...originalData,
         name: newName,
         title: `${newName} | ORBY`,
@@ -151,6 +187,21 @@ function OrbyAdminDashboard() {
         instagram,
         active: true,
       })
+
+      if (shouldCreateLogin) {
+        const userCredential = await createUserWithEmailAndPassword(
+          secondaryAuth,
+          adminEmail,
+          adminPassword
+        )
+
+        await setDoc(doc(db, 'users', userCredential.user.uid), {
+          email: adminEmail,
+          storeSlug: newSlug,
+          role: 'storeAdmin',
+          createdAt: new Date(),
+        })
+      }
 
       if (copyProducts) {
         const productsSnapshot = await getDocs(
@@ -187,9 +238,29 @@ function OrbyAdminDashboard() {
 
       setStores(data)
 
-      alert('Loja duplicada com sucesso!')
+      alert(
+        shouldCreateLogin
+          ? 'Loja duplicada e login criado com sucesso!'
+          : 'Loja duplicada com sucesso!'
+      )
     } catch (error) {
       console.error(error)
+
+      if (error.code === 'auth/email-already-in-use') {
+        alert('Esse e-mail já está sendo usado em outro login.')
+        return
+      }
+
+      if (error.code === 'auth/invalid-email') {
+        alert('E-mail inválido.')
+        return
+      }
+
+      if (error.code === 'auth/weak-password') {
+        alert('Senha muito fraca. Use pelo menos 6 caracteres.')
+        return
+      }
+
       alert('Erro ao duplicar loja')
     }
   }
@@ -253,7 +324,10 @@ function OrbyAdminDashboard() {
 
       <section className="orby-admin-list">
         <div className="orby-list-header">
-          <h2>Lojas cadastradas <span>{stores.length} loja(s)</span></h2>
+          <h2>
+            Lojas cadastradas <span>{stores.length} loja(s)</span>
+          </h2>
+
           <button
             className="orby-nova-loja-btn"
             onClick={() => navigate('/orby-admin/criar-loja')}
@@ -274,7 +348,14 @@ function OrbyAdminDashboard() {
               <strong>{store.name}</strong>
               <p>{store.tagline}</p>
               <p>Slug: {store.id}</p>
-              <span className={`orby-status-pill ${store.active === false ? 'orby-status-pill--inactive' : 'orby-status-pill--active'}`}>
+
+              <span
+                className={`orby-status-pill ${
+                  store.active === false
+                    ? 'orby-status-pill--inactive'
+                    : 'orby-status-pill--active'
+                }`}
+              >
                 <span className="orby-status-dot" />
                 {store.active === false ? 'Inativa' : 'Ativa'}
               </span>
@@ -297,7 +378,9 @@ function OrbyAdminDashboard() {
 
               <button
                 className="admin-btn admin-btn--neutral"
-                onClick={() => navigate(`/orby-admin/editar-loja/${store.id}`)}
+                onClick={() =>
+                  navigate(`/orby-admin/editar-loja/${store.id}`)
+                }
               >
                 Editar
               </button>
