@@ -173,11 +173,19 @@ Tamanho: ${selectedSize || '-'}`
 
       <main className="product-details fade-in">
         <section className="product-gallery">
-          <img
-            src={selectedImage}
-            alt={product.name}
-            className="main-product-image"
-          />
+          <div style={{ position: 'relative' }}>
+            <img
+              src={selectedImage}
+              alt={product.name}
+              className="main-product-image"
+            />
+
+            {product.productSection === 'outlet' && product.oldPrice && (
+              <span className="discount-badge">
+                {Math.round((1 - product.price / product.oldPrice) * 100)}%
+              </span>
+            )}
+          </div>
 
           <div className="thumbs">
             <img

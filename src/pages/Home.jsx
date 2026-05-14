@@ -523,6 +523,12 @@ const storePrefix = `/${storeSlug}`
                       {!product.available && (
                         <span className="unavailable-badge">Indisponível</span>
                       )}
+
+                      {product.productSection === 'outlet' && product.oldPrice && (
+                        <span className="discount-badge">
+                          {Math.round((1 - product.price / product.oldPrice) * 100)}%
+                        </span>
+                      )}
                     </div>
 
                     <div className="product-info">

@@ -211,7 +211,7 @@ function Products() {
                 key={product.id}
                 onClick={() => navigate(`${storePrefix}/produto/${product.id}`)}
               >
-                <div className="product-image-wrapper">
+                <div className="product-image-wrapper" style={{ position: 'relative' }}>
                   <img
                     src={product.image}
                     alt={product.name}
@@ -220,6 +220,12 @@ function Products() {
 
                   {!product.available && (
                     <span className="unavailable-badge">Indisponível</span>
+                  )}
+
+                  {product.productSection === 'outlet' && product.oldPrice && (
+                    <span className="discount-badge">
+                      {Math.round((1 - product.price / product.oldPrice) * 100)}%
+                    </span>
                   )}
                 </div>
 
