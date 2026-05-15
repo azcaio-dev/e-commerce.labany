@@ -349,44 +349,6 @@ const storePrefix = `/${storeSlug}`
           </section>
         )}
 
-        {!loading && !activeFilter && (
-          <section className="trust-section fade-in">
-            <div className="trust-grid">
-              <div className="trust-item">
-                <div className="trust-icon">
-                  <img src="/escudo.png" alt="" />
-                </div>
-                <p className="trust-label">Compra segura</p>
-                <p className="trust-desc">Seus dados protegidos</p>
-              </div>
-
-              <div className="trust-item">
-                <div className="trust-icon">
-                  <img src="/whatsapp.png" alt="" />
-                </div>
-                <p className="trust-label">Compre pelo Whatsapp</p>
-                <p className="trust-desc">Você pode comprar pelo Whatsapp</p>
-              </div>
-
-              <div className="trust-item">
-                <div className="trust-icon">
-                  <img src="/entrega-rapida.png" alt="" />
-                </div>
-                <p className="trust-label">Entrega rápida</p>
-                <p className="trust-desc">Entregamos em todo o Brasil</p>
-              </div>
-
-              <div className="trust-item">
-                <div className="trust-icon">
-                  <img src="/envio-gratis.png" alt="" />
-                </div>
-                <p className="trust-label">Frete grátis</p>
-                <p className="trust-desc">A partir de R$ 195,00</p>
-              </div>
-            </div>
-          </section>
-        )}
-
         {!loading && !activeFilter && launchProducts.length > 0 && (
           <section className="launch-section fade-in">
             <h2>Lançamentos</h2>
@@ -497,6 +459,44 @@ const storePrefix = `/${storeSlug}`
               </div>
             </section>
           )}
+
+                {!loading && !activeFilter && (
+                  <section className="trust-section fade-in">
+                    <div className="trust-grid">
+                      <div className="trust-item">
+                        <div className="trust-icon">
+                          <img src="/escudo.png" alt="" />
+                        </div>
+                        <p className="trust-label">Compra segura</p>
+                        <p className="trust-desc">Seus dados protegidos</p>
+                      </div>
+
+                      <div className="trust-item">
+                        <div className="trust-icon">
+                          <img src="/whatsapp.png" alt="" />
+                        </div>
+                        <p className="trust-label">Compre pelo Whatsapp</p>
+                        <p className="trust-desc">Você pode comprar pelo Whatsapp</p>
+                      </div>
+
+                      <div className="trust-item">
+                        <div className="trust-icon">
+                          <img src="/entrega-rapida.png" alt="" />
+                        </div>
+                        <p className="trust-label">Entrega rápida</p>
+                        <p className="trust-desc">Entregamos em todo o Brasil</p>
+                      </div>
+
+                      <div className="trust-item">
+                        <div className="trust-icon">
+                          <img src="/envio-gratis.png" alt="" />
+                        </div>
+                        <p className="trust-label">Frete grátis</p>
+                        <p className="trust-desc">A partir de R$ 195,00</p>
+                      </div>
+                    </div>
+                  </section>
+                )}
 
         {activeFilter ? (
           <>
