@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { doc, setDoc } from 'firebase/firestore'
-import { db } from '../services/firebase'
+import { doc, setDoc, getDoc } from 'firebase/firestore'
+import { createUserWithEmailAndPassword } from 'firebase/auth'
+import { db, secondaryAuth } from '../services/firebase'
 
 function OrbyCreateStore() {
   const navigate = useNavigate()
@@ -15,6 +16,10 @@ function OrbyCreateStore() {
   const [whatsapp, setWhatsapp] = useState('')
   const [instagram, setInstagram] = useState('')
   const [email, setEmail] = useState('')
+
+  const [adminEmail, setAdminEmail] = useState('')
+  const [adminPassword, setAdminPassword] = useState('')
+  const [createLogin, setCreateLogin] = useState(false)
 
   const uploadLogo = async (file) => {
     const formData = new FormData()
@@ -46,9 +51,34 @@ function OrbyCreateStore() {
       return
     }
 
+    if (createLogin) {
+      if (!adminEmail) {
+        alert('Informe o e-mail do admin')
+        return
+      }
+
+      if (!adminPassword) {
+        alert('Informe a senha do admin')
+        return
+      }
+
+      if (adminPassword.length < 6) {
+        alert('A senha precisa ter pelo menos 6 caracteres.')
+        return
+      }
+    }
+
     setLoading(true)
 
     try {
+      const existingSnap = await getDoc(doc(db, 'stores', slug))
+
+      if (existingSnap.exists()) {
+        alert('Já existe uma loja com esse slug.')
+        setLoading(false)
+        return
+      }
+
       let logoUrl = ''
 
       if (logoFile) {
@@ -84,10 +114,45 @@ function OrbyCreateStore() {
         },
       })
 
-      alert('Loja criada com sucesso!')
+      if (createLogin) {
+        const userCredential = await createUserWithEmailAndPassword(
+          secondaryAuth,
+          adminEmail,
+          adminPassword
+        )
+
+        await setDoc(doc(db, 'users', userCredential.user.uid), {
+          email: adminEmail,
+          storeSlug: slug,
+          role: 'storeAdmin',
+          createdAt: new Date(),
+        })
+      }
+
+      alert(
+        createLogin
+          ? 'Loja criada e login configurado com sucesso!'
+          : 'Loja criada com sucesso!'
+      )
       navigate('/orby-admin/dashboard')
     } catch (error) {
       console.error(error)
+
+      if (error.code === 'auth/email-already-in-use') {
+        alert('Esse e-mail já está sendo usado em outro login.')
+        return
+      }
+
+      if (error.code === 'auth/invalid-email') {
+        alert('E-mail inválido.')
+        return
+      }
+
+      if (error.code === 'auth/weak-password') {
+        alert('Senha muito fraca. Use pelo menos 6 caracteres.')
+        return
+      }
+
       alert('Erro ao criar loja')
     }
 
@@ -157,13 +222,41 @@ function OrbyCreateStore() {
 
           <input
             type="email"
-            placeholder="E-mail"
+            placeholder="E-mail da loja"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
 
+          <label className="orby-switch-row">
+            <span>Criar login e senha para o admin da loja</span>
+            <input
+              type="checkbox"
+              checked={createLogin}
+              onChange={(e) => setCreateLogin(e.target.checked)}
+            />
+            <span className="orby-switch" />
+          </label>
+
+          {createLogin && (
+            <>
+              <input
+                type="email"
+                placeholder="E-mail de login do admin"
+                value={adminEmail}
+                onChange={(e) => setAdminEmail(e.target.value)}
+              />
+
+              <input
+                type="password"
+                placeholder="Senha do admin (mín. 6 caracteres)"
+                value={adminPassword}
+                onChange={(e) => setAdminPassword(e.target.value)}
+              />
+            </>
+          )}
+
           <button type="submit" disabled={loading}>
-            {loading ? 'Enviando logo e criando loja...' : 'Criar loja'}
+            {loading ? 'Criando loja...' : 'Criar loja'}
           </button>
 
           <button
