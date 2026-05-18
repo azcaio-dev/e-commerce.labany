@@ -39,7 +39,8 @@ function App() {
       </Routes>
 
       {!window.location.pathname.startsWith('/admin') &&
-      !window.location.pathname.startsWith('/admin') && window.location.pathname !== '/' && <Footer />}
+      !window.location.pathname.startsWith('/orby-admin') &&
+      window.location.pathname !== '/' && <Footer />}
      </BrowserRouter>
   )
 }
