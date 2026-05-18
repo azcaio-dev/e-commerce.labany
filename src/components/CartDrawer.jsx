@@ -15,8 +15,8 @@ function CartDrawer({ open, onClose }) {
     return null
   }
 
-  const total = cart.reduce((acc, item) => {
-    let price = item.price
+  function formatPrice(value) {
+    let price = value
 
     if (typeof price === 'string') {
       price = price
@@ -32,33 +32,46 @@ function CartDrawer({ open, onClose }) {
       price = 0
     }
 
+    return price
+  }
+
+  const total = cart.reduce((acc, item) => {
+    const price = formatPrice(item.price)
     return acc + item.quantity * price
   }, 0)
 
   const message = cart
-    .map(
-      (item) => `• ${item.quantity}x ${item.name}
+    .map((item) => {
+      const price = formatPrice(item.price)
+
+      return `• ${item.quantity}x ${item.name}
 Tam: ${item.selectedSize || '-'}
-R$: ${Number(item.price).toLocaleString('pt-BR', {
+Preço: ${price.toLocaleString('pt-BR', {
         style: 'currency',
         currency: 'BRL',
       })}`
-    )
+    })
     .join('\n\n')
 
-  const whatsappLink = `https://wa.me/${store.whatsapp}?text=${encodeURIComponent(
-    `${store.checkout?.messageIntro || 'Olá! Quero finalizar meu pedido:'}
+  const phone = String(store.whatsapp || '').replace(/\D/g, '')
+
+  const whatsappText = `${store.checkout?.messageIntro || 'Olá! Quero finalizar meu pedido:'}
 
 *Itens:*
 ${message}
 
 *Total:* ${total.toLocaleString('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
-    })}
+    style: 'currency',
+    currency: 'BRL',
+  })}
 
 Pode me ajudar com o pagamento e entrega?`
-  )}`
+
+  const whatsappLink = `https://wa.me/${phone}?text=${encodeURIComponent(whatsappText)}`
+
+  function handleWhatsappCheckout() {
+    window.location.href = whatsappLink
+  }
 
   return (
     <>
@@ -77,11 +90,11 @@ Pode me ajudar com o pagamento e entrega?`
               key={`${item.id}-${item.selectedSize || 'sem-tamanho'}-${index}`}
               className="cart-item"
             >
-              <img 
-              src={item.image} 
-              alt={item.name} 
-              className="cart-item-image"
-              loading='lazy'
+              <img
+                src={item.image}
+                alt={item.name}
+                className="cart-item-image"
+                loading="lazy"
               />
 
               <div className="cart-info">
@@ -106,7 +119,7 @@ Pode me ajudar com o pagamento e entrega?`
                 <div className="cart-price-box">
                   {item.productSection === 'outlet' && item.oldPrice && (
                     <span className="cart-old-price">
-                      {Number(item.oldPrice).toLocaleString('pt-BR', {
+                      {formatPrice(item.oldPrice).toLocaleString('pt-BR', {
                         style: 'currency',
                         currency: 'BRL',
                       })}
@@ -114,7 +127,7 @@ Pode me ajudar com o pagamento e entrega?`
                   )}
 
                   <strong className="cart-current-price">
-                    {Number(item.price).toLocaleString('pt-BR', {
+                    {formatPrice(item.price).toLocaleString('pt-BR', {
                       style: 'currency',
                       currency: 'BRL',
                     })}
@@ -134,14 +147,13 @@ Pode me ajudar com o pagamento e entrega?`
                 })}
               </h3>
 
-              <a
-                href={whatsappLink}
-                target="_blank"
-                rel="noreferrer"
+              <button
+                type="button"
+                onClick={handleWhatsappCheckout}
                 className="whatsapp-button"
               >
                 Finalizar no WhatsApp
-              </a>
+              </button>
 
               <button onClick={clearCart} className="clear-cart">
                 Limpar carrinho

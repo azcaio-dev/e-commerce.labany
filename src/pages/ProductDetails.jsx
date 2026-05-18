@@ -145,13 +145,15 @@ function ProductDetails() {
     currency: 'BRL',
   })
 
+  const phone = String(store.whatsapp || '').replace(/\D/g, '')
+
   const whatsappMessage = `${store.checkout?.messageIntro || 'Olá! Tenho interesse nesse produto:'}
 
 Produto: ${product.name}
 Preço: ${formattedPrice}
 Tamanho: ${selectedSize || '-'}`
 
-  const whatsappLink = `https://wa.me/${store.whatsapp}?text=${encodeURIComponent(
+  const whatsappLink = `https://wa.me/${phone}?text=${encodeURIComponent(
     whatsappMessage
   )}`
 
@@ -206,7 +208,7 @@ Tamanho: ${selectedSize || '-'}`
           </div>
         </section>
 
-       <section className="product-content">
+        <section className="product-content">
           <h1>{product.name}</h1>
 
           <div className="product-price-box">
@@ -277,14 +279,14 @@ Tamanho: ${selectedSize || '-'}`
             </button>
 
             {product.available && (
-              <a
+              <button
                 className="whatsapp-button"
-                href={whatsappLink}
-                target="_blank"
-                rel="noreferrer"
+                onClick={() => {
+                  window.location.href = whatsappLink
+                }}
               >
                 Comprar pelo WhatsApp
-              </a>
+              </button>
             )}
           </div>
         </section>
