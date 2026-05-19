@@ -63,8 +63,39 @@ function AdminProducts() {
     ...new Set(products.map((p) => p.category).filter(Boolean)),
   ]
 
-  const letterSizes = ['PP', 'P', 'M', 'G', 'GG', 'XG']
-  const numberSizes = ['34', '36', '38', '40', '42', '44', '46']
+  const letterSizes = [
+    'PP',
+    'P',
+    'M',
+    'G',
+    'GG',
+    'G1',
+    'G2',
+    'G3',
+  ]
+  const numberSizes = [
+    '36',
+    '37',
+    '38',
+    '39',
+    '40',
+    '41',
+    '42',
+    '43',
+    '44',
+    '45',
+    '46',
+    '47',
+    '48',
+    '49',
+    '50',
+    '51',
+    '52',
+    '53',
+    '54',
+    '55',
+    '56',
+  ]
 
   const sizeOptions =
     sizeType === 'letter'
