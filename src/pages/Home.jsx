@@ -596,10 +596,10 @@ const storePrefix = `/${storeSlug}`
 
                   <div className="trust-item">
                     <div className="trust-icon">
-                      <img src="/envio-gratis.png" alt="" />
+                      <img src="/forma-de-pagamento.png" alt="" />
                     </div>
-                    <p className="trust-label">Frete grátis</p>
-                    <p className="trust-desc">A partir de R$ 195,00</p>
+                      <p className="trust-label">Pagamento facilitado</p>
+                      <p className="trust-desc">Pix e cartão disponível</p>
                   </div>
                 </div>
               </section>
