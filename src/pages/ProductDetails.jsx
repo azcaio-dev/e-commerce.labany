@@ -12,9 +12,7 @@ import useStoreTheme from '../hooks/useStoreTheme'
 function ProductDetails() {
   const navigate = useNavigate()
   const { cart, addToCart } = useCart()
-
   const { id } = useParams()
-
   const { store, loading: storeLoading, storeSlug } = useStore()
 
   useStoreTheme(store)
@@ -23,6 +21,7 @@ function ProductDetails() {
   const [loading, setLoading] = useState(true)
   const [selectedImage, setSelectedImage] = useState('')
   const [selectedSize, setSelectedSize] = useState('')
+  const [selectedVariation, setSelectedVariation] = useState(null)
   const [openCart, setOpenCart] = useState(false)
   const [added, setAdded] = useState(false)
   const [toast, setToast] = useState({ message: '', type: 'success' })
@@ -57,8 +56,15 @@ function ProductDetails() {
             ...productSnap.data(),
           }
 
+          const productImages =
+            data.images?.length > 0
+              ? data.images
+              : [data.image, data.image2].filter(Boolean)
+
           setProduct(data)
-          setSelectedImage(data.image)
+          setSelectedImage(productImages[0] || '')
+          setSelectedVariation(null)
+          setSelectedSize('')
         } else {
           setProduct(null)
         }
@@ -102,12 +108,7 @@ function ProductDetails() {
           }}
         />
 
-        <h1
-          style={{
-            fontSize: '28px',
-            margin: 0,
-          }}
-        >
+        <h1 style={{ fontSize: '28px', margin: 0 }}>
           Loja temporariamente indisponível
         </h1>
 
@@ -140,10 +141,20 @@ function ProductDetails() {
     )
   }
 
+  const productImages =
+    product.images?.length > 0
+      ? product.images
+      : [product.image, product.image2].filter(Boolean)
+
   const formattedPrice = Number(product.price).toLocaleString('pt-BR', {
     style: 'currency',
     currency: 'BRL',
   })
+
+  const availableSizes = selectedVariation?.sizes || product.sizes || []
+
+  const selectedColor =
+    selectedVariation?.colorName || product.mainColor || '-'
 
   const phone = String(store.whatsapp || '').replace(/\D/g, '')
 
@@ -151,6 +162,7 @@ function ProductDetails() {
 
 Produto: ${product.name}
 Preço: ${formattedPrice}
+Cor: ${selectedColor}
 Tamanho: ${selectedSize || '-'}`
 
   const whatsappLink = `https://wa.me/${phone}?text=${encodeURIComponent(
@@ -177,7 +189,7 @@ Tamanho: ${selectedSize || '-'}`
         <section className="product-gallery">
           <div style={{ position: 'relative' }}>
             <img
-              src={selectedImage}
+              src={selectedImage || productImages[0]}
               alt={product.name}
               className="main-product-image"
             />
@@ -190,21 +202,33 @@ Tamanho: ${selectedSize || '-'}`
           </div>
 
           <div className="thumbs">
-            <img
-              src={product.image}
-              alt={product.name}
-              onClick={() => setSelectedImage(product.image)}
-              loading="lazy"
-            />
-
-            {product.image2 && (
+            {productImages.map((image, index) => (
               <img
-                src={product.image2}
+                key={index}
+                src={image}
                 alt={product.name}
-                onClick={() => setSelectedImage(product.image2)}
+                onClick={() => {
+                  setSelectedImage(image)
+                  setSelectedVariation(null)
+                  setSelectedSize('')
+                }}
                 loading="lazy"
               />
-            )}
+            ))}
+
+            {product.variations?.map((variation, index) => (
+              <img
+                key={index}
+                src={variation.image}
+                alt={variation.colorName}
+                onClick={() => {
+                  setSelectedVariation(variation)
+                  setSelectedImage(variation.image)
+                  setSelectedSize('')
+                }}
+                loading="lazy"
+              />
+            ))}
           </div>
         </section>
 
@@ -221,9 +245,7 @@ Tamanho: ${selectedSize || '-'}`
               </span>
             )}
 
-            <strong className="product-current-price">
-              {formattedPrice}
-            </strong>
+            <strong className="product-current-price">{formattedPrice}</strong>
           </div>
 
           <div className="product-description">
@@ -231,11 +253,50 @@ Tamanho: ${selectedSize || '-'}`
             <p>{product.description || 'Sem descrição cadastrada.'}</p>
           </div>
 
+          {(product.mainColor || product.variations?.length > 0) && (
+            <div className="product-colors">
+              <h3>Cores disponíveis</h3>
+
+              <div className="size-options">
+                {product.mainColor && (
+                  <button
+                    className={!selectedVariation ? 'selected' : ''}
+                    onClick={() => {
+                      setSelectedVariation(null)
+                      setSelectedImage(productImages[0])
+                      setSelectedSize('')
+                    }}
+                  >
+                    {product.mainColor}
+                  </button>
+                )}
+
+                {product.variations?.map((variation, index) => (
+                  <button
+                    key={index}
+                    className={
+                      selectedVariation?.colorName === variation.colorName
+                        ? 'selected'
+                        : ''
+                    }
+                    onClick={() => {
+                      setSelectedVariation(variation)
+                      setSelectedImage(variation.image)
+                      setSelectedSize('')
+                    }}
+                  >
+                    {variation.colorName}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="product-sizes">
             <h3>Tamanhos disponíveis</h3>
 
             <div className="size-options">
-              {product.sizes?.map((size) => (
+              {availableSizes.map((size) => (
                 <button
                   key={size}
                   className={selectedSize === size ? 'selected' : ''}
@@ -257,9 +318,21 @@ Tamanho: ${selectedSize || '-'}`
                   return
                 }
 
+                if (
+                  product.variations?.length > 0 &&
+                  !selectedVariation &&
+                  !product.mainColor
+                ) {
+                  showToast('Selecione uma cor', 'warning')
+                  return
+                }
+
                 addToCart({
                   ...product,
+                  image: selectedImage || productImages[0],
                   selectedSize,
+                  selectedColor:
+                    selectedVariation?.colorName || product.mainColor || '',
                   price: product.price,
                 })
 

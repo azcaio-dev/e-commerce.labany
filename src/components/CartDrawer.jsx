@@ -45,7 +45,8 @@ function CartDrawer({ open, onClose }) {
       const price = formatPrice(item.price)
 
       return `• ${item.quantity}x ${item.name}
-Tam: ${item.selectedSize || '-'}
+${item.selectedColor ? `Cor: ${item.selectedColor}
+` : ''}Tam: ${item.selectedSize || '-'}
 Preço: ${price.toLocaleString('pt-BR', {
         style: 'currency',
         currency: 'BRL',
@@ -87,7 +88,7 @@ Pode me ajudar com o pagamento e entrega?`
 
           {cart.map((item, index) => (
             <div
-              key={`${item.id}-${item.selectedSize || 'sem-tamanho'}-${index}`}
+              key={`${item.id}-${item.selectedSize || 'sem-tamanho'}-${item.selectedColor || 'sem-cor'}-${index}`}
               className="cart-item"
             >
               <img
@@ -101,16 +102,38 @@ Pode me ajudar com o pagamento e entrega?`
                 <strong className="cart-product-name">{item.name}</strong>
 
                 <div className="cart-middle-row">
-                  <span>Tam: {item.selectedSize || '-'}</span>
+                  <div>
+                    {item.selectedColor && (
+                      <span>Cor: {item.selectedColor}</span>
+                    )}
+
+                    <span>Tam: {item.selectedSize || '-'}</span>
+                  </div>
 
                   <div className="cart-quantity">
-                    <button onClick={() => decreaseQuantity(item.id, item.selectedSize)}>
+                    <button
+                      onClick={() =>
+                        decreaseQuantity(
+                          item.id,
+                          item.selectedSize,
+                          item.selectedColor
+                        )
+                      }
+                    >
                       −
                     </button>
 
                     <span>{item.quantity}</span>
 
-                    <button onClick={() => increaseQuantity(item.id, item.selectedSize)}>
+                    <button
+                      onClick={() =>
+                        increaseQuantity(
+                          item.id,
+                          item.selectedSize,
+                          item.selectedColor
+                        )
+                      }
+                    >
                       +
                     </button>
                   </div>

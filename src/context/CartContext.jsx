@@ -32,7 +32,8 @@ export function CartProvider({ children }) {
       const exists = prev.find(
         (item) =>
           item.id === product.id &&
-          item.selectedSize === product.selectedSize
+          item.selectedSize === product.selectedSize &&
+          item.selectedColor === product.selectedColor
       )
 
       let updatedCart
@@ -40,7 +41,8 @@ export function CartProvider({ children }) {
       if (exists) {
         updatedCart = prev.map((item) =>
           item.id === product.id &&
-          item.selectedSize === product.selectedSize
+          item.selectedSize === product.selectedSize &&
+          item.selectedColor === product.selectedColor
             ? { ...item, quantity: item.quantity + 1 }
             : item
         )
@@ -53,17 +55,24 @@ export function CartProvider({ children }) {
     })
   }
 
-  function removeFromCart(id, selectedSize) {
+  function removeFromCart(id, selectedSize, selectedColor) {
     const updatedCart = cart.filter(
-      (item) => !(item.id === id && item.selectedSize === selectedSize)
+      (item) =>
+        !(
+          item.id === id &&
+          item.selectedSize === selectedSize &&
+          item.selectedColor === selectedColor
+        )
     )
 
     saveCart(updatedCart)
   }
 
-  function increaseQuantity(id, selectedSize) {
+  function increaseQuantity(id, selectedSize, selectedColor) {
     const updatedCart = cart.map((item) =>
-      item.id === id && item.selectedSize === selectedSize
+      item.id === id &&
+      item.selectedSize === selectedSize &&
+      item.selectedColor === selectedColor
         ? { ...item, quantity: item.quantity + 1 }
         : item
     )
@@ -71,10 +80,12 @@ export function CartProvider({ children }) {
     saveCart(updatedCart)
   }
 
-  function decreaseQuantity(id, selectedSize) {
+  function decreaseQuantity(id, selectedSize, selectedColor) {
     const updatedCart = cart
       .map((item) =>
-        item.id === id && item.selectedSize === selectedSize
+        item.id === id &&
+        item.selectedSize === selectedSize &&
+        item.selectedColor === selectedColor
           ? { ...item, quantity: item.quantity - 1 }
           : item
       )

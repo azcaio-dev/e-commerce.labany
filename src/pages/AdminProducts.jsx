@@ -28,14 +28,22 @@ function AdminProducts() {
   const [oldPrice, setOldPrice] = useState('')
   const [price, setPrice] = useState('')
   const [description, setDescription] = useState('')
-  const [file1, setFile1] = useState(null)
-  const [file2, setFile2] = useState(null)
+  const [mainColor, setMainColor] = useState('')
+  const [productImages, setProductImages] = useState([null])
   const [loading, setLoading] = useState(false)
   const [brand, setBrand] = useState('')
   const [category, setCategory] = useState('')
   const [productSection, setProductSection] = useState('')
   const [sizeType, setSizeType] = useState('letter')
   const [sizes, setSizes] = useState([])
+
+  const [showVariationForm, setShowVariationForm] = useState(false)
+  const [variationColorName, setVariationColorName] = useState('')
+  const [variationFile, setVariationFile] = useState(null)
+  const [variationSizeType, setVariationSizeType] = useState('letter')
+  const [variationSizes, setVariationSizes] = useState([])
+  const [variations, setVariations] = useState([])
+
   const [toast, setToast] = useState({
     message: '',
     type: 'success',
@@ -73,6 +81,7 @@ function AdminProducts() {
     'G2',
     'G3',
   ]
+
   const numberSizes = [
     '36',
     '37',
@@ -104,11 +113,85 @@ function AdminProducts() {
       ? numberSizes
       : ['Tamanho único']
 
+  const variationSizeOptions =
+    variationSizeType === 'letter'
+      ? letterSizes
+      : variationSizeType === 'number'
+      ? numberSizes
+      : ['Tamanho único']
+
   function toggleSize(size) {
     setSizes((prev) =>
       prev.includes(size)
         ? prev.filter((item) => item !== size)
         : [...prev, size]
+    )
+  }
+
+  function toggleVariationSize(size) {
+    setVariationSizes((prev) =>
+      prev.includes(size)
+        ? prev.filter((item) => item !== size)
+        : [...prev, size]
+    )
+  }
+
+  function updateProductImage(index, file) {
+    setProductImages((prev) => {
+      const updated = [...prev]
+      updated[index] = file
+      return updated
+    })
+  }
+
+  function addNewImageField() {
+    setProductImages((prev) => [...prev, null])
+  }
+
+  async function addVariation() {
+    if (!variationColorName || !variationFile) {
+      showToast('Informe o nome da cor e selecione uma imagem', 'warning')
+      return
+    }
+
+    if (variationSizes.length === 0) {
+      showToast('Selecione pelo menos um tamanho para a variação', 'warning')
+      return
+    }
+
+    setLoading(true)
+
+    try {
+      const image = await uploadImage(variationFile)
+
+      setVariations((prev) => [
+        ...prev,
+        {
+          colorName: variationColorName,
+          image,
+          sizeType: variationSizeType,
+          sizes: variationSizes,
+        },
+      ])
+
+      setVariationColorName('')
+      setVariationFile(null)
+      setVariationSizeType('letter')
+      setVariationSizes([])
+      setShowVariationForm(false)
+
+      showToast('Variação adicionada com sucesso!', 'success')
+    } catch (error) {
+      console.error(error)
+      showToast('Erro ao adicionar variação', 'error')
+    }
+
+    setLoading(false)
+  }
+
+  function removeVariation(indexToRemove) {
+    setVariations((prev) =>
+      prev.filter((_, index) => index !== indexToRemove)
     )
   }
 
@@ -158,11 +241,7 @@ function AdminProducts() {
     fetchProducts()
   }, [storeSlug])
 
-  function compressImage(
-    file,
-    maxWidth = 1000,
-    quality = 0.75
-  ) {
+  function compressImage(file, maxWidth = 1000, quality = 0.75) {
     return new Promise((resolve, reject) => {
       const img = new Image()
       const reader = new FileReader()
@@ -173,7 +252,6 @@ function AdminProducts() {
 
       img.onload = () => {
         const canvas = document.createElement('canvas')
-
         const scale = Math.min(maxWidth / img.width, 1)
 
         canvas.width = img.width * scale
@@ -181,20 +259,12 @@ function AdminProducts() {
 
         const ctx = canvas.getContext('2d')
 
-        ctx.drawImage(
-          img,
-          0,
-          0,
-          canvas.width,
-          canvas.height
-        )
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
 
         canvas.toBlob(
           (blob) => {
             if (!blob) {
-              reject(
-                new Error('Erro ao comprimir imagem')
-              )
+              reject(new Error('Erro ao comprimir imagem'))
               return
             }
 
@@ -250,14 +320,21 @@ function AdminProducts() {
     setOldPrice('')
     setPrice('')
     setDescription('')
-    setFile1(null)
-    setFile2(null)
+    setMainColor('')
+    setProductImages([null])
     setEditingId(null)
     setBrand('')
     setCategory('')
     setProductSection('')
     setSizeType('letter')
     setSizes([])
+
+    setShowVariationForm(false)
+    setVariationColorName('')
+    setVariationFile(null)
+    setVariationSizeType('letter')
+    setVariationSizes([])
+    setVariations([])
   }
 
   function handleEdit(product) {
@@ -267,14 +344,21 @@ function AdminProducts() {
     setOldPrice(product.oldPrice ?? '')
     setPrice(product.price || '')
     setDescription(product.description || '')
+    setMainColor(product.mainColor || '')
     setBrand(product.brand || '')
     setCategory(product.category || '')
     setProductSection(product.productSection || '')
     setSizeType(product.sizeType || 'letter')
     setSizes(product.sizes || [])
 
-    setFile1(null)
-    setFile2(null)
+    setVariations(product.variations || [])
+    setShowVariationForm(false)
+    setVariationColorName('')
+    setVariationFile(null)
+    setVariationSizeType('letter')
+    setVariationSizes([])
+
+    setProductImages([null])
 
     formRef.current?.scrollIntoView({
       behavior: 'smooth',
@@ -286,10 +370,7 @@ function AdminProducts() {
     e.preventDefault()
 
     if (sizes.length === 0) {
-      showToast(
-        'Selecione pelo menos um tamanho',
-        'warning'
-      )
+      showToast('Selecione pelo menos um tamanho', 'warning')
       return
     }
 
@@ -299,87 +380,65 @@ function AdminProducts() {
       if (editingId) {
         const updatedData = {
           name,
-          oldPrice: oldPrice
-            ? Number(oldPrice)
-            : null,
+          oldPrice: oldPrice ? Number(oldPrice) : null,
           price: Number(price),
           description,
+          mainColor,
           brand,
           category,
           productSection,
           sizeType,
           sizes,
+          variations,
         }
 
-        if (file1) {
-          updatedData.image = await uploadImage(file1)
-        }
+        const validImages = productImages.filter(Boolean)
 
-        if (file2) {
-          updatedData.image2 = await uploadImage(file2)
+        if (validImages.length > 0) {
+          updatedData.images = await Promise.all(
+            validImages.map((file) => uploadImage(file))
+          )
         }
 
         await updateDoc(
-          doc(
-            db,
-            'stores',
-            storeSlug,
-            'products',
-            editingId
-          ),
+          doc(db, 'stores', storeSlug, 'products', editingId),
           updatedData
         )
 
-        showToast(
-          'Produto atualizado com sucesso!',
-          'success'
-        )
+        showToast('Produto atualizado com sucesso!', 'success')
       } else {
-        if (!file1 || !file2) {
-          showToast(
-            'Selecione as duas imagens',
-            'warning'
-          )
+        const validImages = productImages.filter(Boolean)
 
+        if (validImages.length === 0) {
+          showToast('Selecione pelo menos uma foto do produto', 'warning')
           setLoading(false)
-
           return
         }
 
-        const [image1, image2] = await Promise.all([
-          uploadImage(file1),
-          uploadImage(file2),
-        ])
+        const uploadedImages = await Promise.all(
+          validImages.map((file) => uploadImage(file))
+        )
 
         await addDoc(
-          collection(
-            db,
-            'stores',
-            storeSlug,
-            'products'
-          ),
+          collection(db, 'stores', storeSlug, 'products'),
           {
             name,
-            oldPrice: oldPrice
-              ? Number(oldPrice)
-              : null,
+            oldPrice: oldPrice ? Number(oldPrice) : null,
             price: Number(price),
             description,
+            mainColor,
             brand,
             category,
             productSection,
             sizeType,
             sizes,
-            image: image1,
-            image2,
+            images: uploadedImages,
+            variations,
             available: true,
           }
         )
 
-        showToast(
-          'Produto cadastrado com sucesso!',
-          'success'
-        )
+        showToast('Produto cadastrado com sucesso!', 'success')
       }
 
       clearForm()
@@ -389,19 +448,14 @@ function AdminProducts() {
       loadProducts()
     } catch (error) {
       console.error(error)
-
-      showToast(
-        'Erro ao salvar produto',
-        'error'
-      )
+      showToast('Erro ao salvar produto', 'error')
     }
 
     setLoading(false)
   }
 
   async function handleDelete(id) {
-    if (!confirm('Deseja excluir este produto?'))
-      return
+    if (!confirm('Deseja excluir este produto?')) return
 
     await deleteDoc(
       doc(db, 'stores', storeSlug, 'products', id)
@@ -412,13 +466,7 @@ function AdminProducts() {
 
   async function toggleAvailable(product) {
     await updateDoc(
-      doc(
-        db,
-        'stores',
-        storeSlug,
-        'products',
-        product.id
-      ),
+      doc(db, 'stores', storeSlug, 'products', product.id),
       {
         available: !product.available,
       }
@@ -543,22 +591,136 @@ function AdminProducts() {
               onChange={(e) => setDescription(e.target.value)}
               required
             />
-
-            <label>Imagem 1 {editingId && '(opcional)'}</label>
             <input
-              type="file"
-              accept="image/*"
-              onChange={(e) => setFile1(e.target.files[0])}
-              required={!editingId}
+              type="text"
+              placeholder="Cor principal do produto (opcional)"
+              value={mainColor}
+              onChange={(e) => setMainColor(e.target.value)}
             />
 
-            <label>Imagem 2 {editingId && '(opcional)'}</label>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(e) => setFile2(e.target.files[0])}
-              required={!editingId}
-            />
+            <div className="product-images-box">
+              <p>Fotos do produto</p>
+
+              {productImages.map((image, index) => (
+                <div key={index}>
+                  <label>
+                    Foto {index + 1} {editingId && '(opcional)'}
+                  </label>
+
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) =>
+                      updateProductImage(index, e.target.files[0])
+                    }
+                    required={!editingId && index === 0}
+                  />
+                </div>
+              ))}
+
+              <button
+                type="button"
+                onClick={addNewImageField}
+                className="add-color-button"
+              >
+                Adicionar nova foto
+              </button>
+            </div>
+
+            <div className="color-variation-box">
+              <p>Variações de cor (opcional)</p>
+
+              <button
+                type="button"
+                onClick={() => setShowVariationForm((prev) => !prev)}
+                className="add-color-button"
+              >
+                {showVariationForm
+                  ? 'Cancelar variação'
+                  : 'Adicionar variação de cor'}
+              </button>
+
+              {showVariationForm && (
+                <div className="variation-form">
+                  <input
+                    type="text"
+                    placeholder="Nome da cor"
+                    value={variationColorName}
+                    onChange={(e) => setVariationColorName(e.target.value)}
+                  />
+
+                  <label>Imagem da cor</label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => setVariationFile(e.target.files[0])}
+                  />
+
+                  <select
+                    value={variationSizeType}
+                    onChange={(e) => {
+                      setVariationSizeType(e.target.value)
+                      setVariationSizes(
+                        e.target.value === 'unique' ? ['Tamanho único'] : []
+                      )
+                    }}
+                  >
+                    <option value="letter">Tamanho por letra</option>
+                    <option value="number">Tamanho por número</option>
+                    <option value="unique">Tamanho único</option>
+                  </select>
+
+                  <div className="sizes-box">
+                    {variationSizeOptions.map((size) => (
+                      <button
+                        type="button"
+                        key={size}
+                        className={`size-button ${
+                          variationSizes.includes(size) ? 'active' : ''
+                        }`}
+                        onClick={() => toggleVariationSize(size)}
+                      >
+                        {size}
+                      </button>
+                    ))}
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={addVariation}
+                    className="add-color-button"
+                    disabled={loading}
+                  >
+                    Salvar variação
+                  </button>
+                </div>
+              )}
+
+              {variations.length > 0 && (
+                <div className="colors-preview">
+                  {variations.map((variation, index) => (
+                    <div key={index} className="color-preview-item">
+                      <img
+                        src={variation.image}
+                        alt={variation.colorName}
+                        width={50}
+                      />
+
+                      <span>
+                        {variation.colorName} - {variation.sizes?.join(', ')}
+                      </span>
+
+                      <button
+                        type="button"
+                        onClick={() => removeVariation(index)}
+                      >
+                        Remover
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
 
             <div className="product-section-box">
               <p>Seção do produto</p>
@@ -604,52 +766,57 @@ function AdminProducts() {
               <span>{products.length} produto(s)</span>
             </div>
 
-            {products.map((product) => (
-              <div key={product.id} className="orby-admin-item">
-                <img 
-                src={product.image} 
-                alt={product.name}
-                loading='lazy'
-                />
+            {products.map((product) => {
+              const productImage =
+                product.images?.[0] || product.image || ''
 
-                <div>
-                  <strong>{product.name}</strong>
+              return (
+                <div key={product.id} className="orby-admin-item">
+                  <img 
+                    src={productImage} 
+                    alt={product.name}
+                    loading="lazy"
+                  />
 
-                  <p>
-                    {Number(product.price).toLocaleString('pt-BR', {
-                      style: 'currency',
-                      currency: 'BRL',
-                    })}
-                  </p>
+                  <div>
+                    <strong>{product.name}</strong>
 
-                  {product.brand && (
                     <p>
-                      {brandLabel}: {product.brand}
+                      {Number(product.price).toLocaleString('pt-BR', {
+                        style: 'currency',
+                        currency: 'BRL',
+                      })}
                     </p>
-                  )}
 
-                  {product.category && (
-                    <p>
-                      {categoryLabel}: {product.category}
-                    </p>
-                  )}
+                    {product.brand && (
+                      <p>
+                        {brandLabel}: {product.brand}
+                      </p>
+                    )}
 
-                  <p>{product.available ? 'Disponível' : 'Indisponível'}</p>
+                    {product.category && (
+                      <p>
+                        {categoryLabel}: {product.category}
+                      </p>
+                    )}
+
+                    <p>{product.available ? 'Disponível' : 'Indisponível'}</p>
+                  </div>
+
+                  <div className="admin-actions">
+                    <button onClick={() => handleEdit(product)}>Editar</button>
+
+                    <button onClick={() => toggleAvailable(product)}>
+                      {product.available ? 'Desativar' : 'Ativar'}
+                    </button>
+
+                    <button onClick={() => handleDelete(product.id)}>
+                      Excluir
+                    </button>
+                  </div>
                 </div>
-
-                <div className="admin-actions">
-                  <button onClick={() => handleEdit(product)}>Editar</button>
-
-                  <button onClick={() => toggleAvailable(product)}>
-                    {product.available ? 'Desativar' : 'Ativar'}
-                  </button>
-
-                  <button onClick={() => handleDelete(product.id)}>
-                    Excluir
-                  </button>
-                </div>
-              </div>
-            ))}
+              )
+            })}
           </section>
         </section>
 
