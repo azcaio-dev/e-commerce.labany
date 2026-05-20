@@ -1,93 +1,78 @@
-# 🛍️ E-commerce de Moda Premium
+# 🛍️ ORBY — SaaS de E-commerce Multi-Tenant
 
-Projeto de e-commerce desenvolvido com foco em experiência de usuário, navegação fluida e conversão via WhatsApp.
+![ORBY Cover](./screenshots/orby-cover.jpeg)
 
-A aplicação simula uma loja de roupas de alto padrão, priorizando organização dos produtos, facilidade de navegação e agilidade no atendimento.
+A ORBY é uma plataforma SaaS de e-commerce desenvolvida para lojas que vendem via Instagram e WhatsApp, oferecendo uma experiência moderna, responsiva e focada em conversão.
 
 ---
 
-## 🚀 Tecnologias utilizadas
+## 🚀 Tecnologias
 
 - React
-- React Router
-- Firebase (Firestore)
-- Context API (Gerenciamento de estado)
-- CSS puro
+- React Router DOM
+- Firebase Auth
+- Firestore
+- Context API
+- Cloudinary
+- CSS
+- Vercel
+
+---
+
+## 🌐 Demonstrações
+
+- [LABANY](https://orbyshop.vercel.app/labany)
+- [JMcamisas](https://orbyshop.vercel.app/jmcamisas)
 
 ---
 
 ## 💡 Funcionalidades
 
-- 🏠 Página inicial com:
-  - Banner rotativo
-  - Seções de:
-    - Mais vendidos
-    - Lançamentos
-    - Outlet
-
-- 🔍 Filtros dinâmicos:
-  - Por categoria (peças)
-  - Por marca
-  - Por seções (lançamentos, outlet, mais vendidos)
-  - Título dinâmico conforme filtro selecionado
-
-- 📦 Página de produtos:
-  - Grid completo
-  - Modal para seleção de tamanho antes de adicionar ao carrinho
-
-- 🛒 Carrinho de compras:
-  - Controle de quantidade
-  - Cálculo automático de total
-  - Finalização via WhatsApp com mensagem pronta
-
-- 📲 Página de produto:
-  - Seleção de tamanho obrigatória
-  - Botão de compra via WhatsApp
-  - Interface focada em conversão
-
-- 📱 UX aprimorada:
-  - Header fixo com redução ao scroll
-  - Menu lateral responsivo
-  - Feedback visual nas ações
-  - Navegação fluida (SPA)
+- Estrutura multi-tenant (`/:storeSlug`)
+- Painel administrativo por loja
+- Painel central ORBY Admin
+- Banner rotativo
+- Sistema de filtros
+- Carrinho com persistência
+- Finalização via WhatsApp
+- Temas dinâmicos por loja
+- Interface responsiva e mobile-first
 
 ---
 
-## 🎯 Objetivo do projeto
+## 🖼️ Preview
 
-Este projeto foi desenvolvido com dois principais objetivos:
+### Multi-Tenant
 
-1. Prática e evolução técnica no desenvolvimento front-end
-2. Criação de uma solução real para lojas que vendem via Instagram e WhatsApp, melhorando:
-   - Organização dos produtos
-   - Experiência do cliente
-   - Conversão de vendas
+![Multi Tenant](./screenshots/multi-tenant.jpeg)
 
----
+### Loja
 
-## 💰 Modelo de negócio aplicado
+![Store Home](./screenshots/store-home.jpeg)
 
-O projeto foi pensado para ser oferecido como solução para pequenos e médios negócios, com:
+### Produto
 
-- Baixo custo inicial
-- Mensalidade acessível
-- Integração direta com WhatsApp (sem necessidade de gateway de pagamento)
+![Product Details](./screenshots/product-details.jpeg)
 
----
+### Carrinho
 
-## 🧠 Aprendizados
+![Cart](./screenshots/cart.jpeg)
 
-- Construção de interfaces focadas em conversão
-- Gerenciamento de estado com Context API
-- Estruturação de navegação em SPA
-- Integração com Firebase
-- Pensamento de produto e experiência do usuário
+### Painel Administrativo
+
+![Admin Dashboard](./screenshots/admin-dashboard.jpeg)
 
 ---
 
-## 📌 Status do projeto
+## 🎯 Objetivo
 
-🚧 Em evolução — novas melhorias e refinamentos sendo adicionados continuamente.
+Criar uma solução acessível para lojas que vendem pelas redes sociais, transformando catálogos improvisados em experiências de compra mais profissionais.
+
+---
+
+## 📌 Status
+
+🚧 Em evolução contínua.
 
 ---
 
