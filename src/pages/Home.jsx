@@ -276,6 +276,21 @@ const storePrefix = `/${storeSlug}`
                 <div
                   className={`banner-slide ${index === currentBanner ? 'active' : ''}`}
                   key={banner.id}
+                  onClick={() => {
+                    if (!banner.redirectValue) return
+
+                    if (banner.redirectValue === 'all') {
+                      navigate(`${storePrefix}/produtos`)
+                      return
+                    }
+
+                    navigate(
+                      `${storePrefix}/produtos?section=${banner.redirectValue}`
+                    )
+                  }}
+                  style={{
+                    cursor: banner.redirectValue ? 'pointer' : 'default',
+                  }}
                 >
                   <img
                     src={banner.image}

@@ -6,7 +6,7 @@ import { db } from '../services/firebase'
 import CartDrawer from '../components/CartDrawer'
 import { useCart } from '../context/CartContext'
 import { createPortal } from 'react-dom'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import lupaIcon from '../assets/lupa.png'
 import SearchPanel from '../components/SearchPanel'
 import useStore from '../hooks/useStore'
@@ -25,9 +25,18 @@ function sortProductsByCategory(products) {
   })
 }
 
+const sectionLabels = {
+  launch: 'Lançamentos',
+  bestseller: 'Mais vendidos',
+  outlet: 'Outlet',
+}
+
 function Products() {
   const { cart, addToCart } = useCart()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const section = searchParams.get('section')
+
   const { store, loading: storeLoading, storeSlug } = useStore()
 
   const storePrefix = `/${storeSlug}`
@@ -96,7 +105,22 @@ function Products() {
         const sortedData = sortProductsByCategory(data)
 
         setProducts(sortedData)
-        setFilteredProducts(sortedData)
+
+        if (section && sectionLabels[section]) {
+          const filtered = sortProductsByCategory(
+            sortedData.filter((p) => p.productSection === section)
+          )
+
+          setFilteredProducts(filtered)
+          setActiveFilter(section)
+          setFilterLabel(sectionLabels[section])
+        } else {
+          setFilteredProducts(sortedData)
+          setActiveFilter(null)
+          setFilterLabel('')
+        }
+
+        setVisibleCount(10)
       } catch (error) {
         console.error('Erro ao carregar produtos:', error)
       } finally {
@@ -105,7 +129,7 @@ function Products() {
     }
 
     loadProducts()
-  }, [storeSlug])
+  }, [storeSlug, section])
 
   const brands = [...new Set(products.map((p) => p.brand).filter(Boolean))]
   const categories = [...new Set(products.map((p) => p.category).filter(Boolean))]
@@ -418,9 +442,10 @@ function Products() {
           <button
             className="menu-link"
             onClick={() => {
-              const filtered = products.filter(
-                (p) => p.productSection === 'launch'
+              const filtered = sortProductsByCategory(
+                products.filter((p) => p.productSection === 'launch')
               )
+
               setVisibleCount(10)
               setFilteredProducts(filtered)
               setActiveFilter('launch')
@@ -434,9 +459,10 @@ function Products() {
           <button
             className="menu-link"
             onClick={() => {
-              const filtered = products.filter(
-                (p) => p.productSection === 'bestseller'
+              const filtered = sortProductsByCategory(
+                products.filter((p) => p.productSection === 'bestseller')
               )
+
               setVisibleCount(10)
               setFilteredProducts(filtered)
               setActiveFilter('bestseller')
@@ -450,9 +476,10 @@ function Products() {
           <button
             className="menu-link"
             onClick={() => {
-              const filtered = products.filter(
-                (p) => p.productSection === 'outlet'
+              const filtered = sortProductsByCategory(
+                products.filter((p) => p.productSection === 'outlet')
               )
+
               setVisibleCount(10)
               setFilteredProducts(filtered)
               setActiveFilter('outlet')
@@ -479,9 +506,10 @@ function Products() {
                     <button
                       key={brand}
                       onClick={() => {
-                        const filtered = products.filter(
-                          (p) => p.brand === brand
+                        const filtered = sortProductsByCategory(
+                          products.filter((p) => p.brand === brand)
                         )
+
                         setVisibleCount(10)
                         setFilteredProducts(filtered)
                         setActiveFilter('brand')
@@ -515,9 +543,10 @@ function Products() {
                     <button
                       key={cat}
                       onClick={() => {
-                        const filtered = products.filter(
-                          (p) => p.category === cat
+                        const filtered = sortProductsByCategory(
+                          products.filter((p) => p.category === cat)
                         )
+
                         setVisibleCount(10)
                         setFilteredProducts(filtered)
                         setActiveFilter('category')

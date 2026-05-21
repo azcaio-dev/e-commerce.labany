@@ -15,6 +15,7 @@ import AdminHeader from '../components/AdminHeader'
 function AdminBanners() {
   const [banners, setBanners] = useState([])
   const [file, setFile] = useState(null)
+  const [redirectValue, setRedirectValue] = useState('')
   const [loading, setLoading] = useState(false)
   const [toast, setToast] = useState({ message: '', type: 'success' })
 
@@ -41,13 +42,13 @@ function AdminBanners() {
     setBanners(data)
   }
 
-    useEffect(() => {
-      async function fetchBanners() {
-        await loadBanners()
-      }
+  useEffect(() => {
+    async function fetchBanners() {
+      await loadBanners()
+    }
 
-      fetchBanners()
-    }, [storeSlug])
+    fetchBanners()
+  }, [storeSlug])
 
   const uploadImage = async (file) => {
     const formData = new FormData()
@@ -87,9 +88,12 @@ function AdminBanners() {
       await addDoc(collection(db, 'stores', storeSlug, 'banners'), {
         image,
         active: true,
+        redirectType: redirectValue ? 'section' : 'none',
+        redirectValue,
       })
 
       setFile(null)
+      setRedirectValue('')
       e.target.reset()
       loadBanners()
 
@@ -123,70 +127,98 @@ function AdminBanners() {
     )
   }
 
+  function getRedirectLabel(banner) {
+    if (!banner.redirectValue) return 'Sem redirecionamento'
+
+    const labels = {
+      all: 'Todos os produtos',
+      launch: 'Lançamentos',
+      bestseller: 'Mais vendidos',
+      outlet: 'Outlet',
+    }
+
+    return labels[banner.redirectValue] || 'Sem redirecionamento'
+  }
+
   return (
     <>
       <AdminHeader />
-    <main className="orby-admin-page">
-      <section className="orby-admin-header">
-        <div>
-          <h1>Banners</h1>
-          <p>Cadastre e controle os banners da página inicial.</p>
-        </div>
-      </section>
 
-      <section className="orby-admin-layout">
-        <form onSubmit={handleSubmit} className="orby-admin-form">
-          <label>Imagem do banner</label>
-
-          <input
-            type="file"
-            accept="image/*"
-            onChange={(e) => setFile(e.target.files[0])}
-            required
-          />
-
-          <button type="submit" disabled={loading}>
-            {loading ? 'Enviando...' : 'Cadastrar banner'}
-          </button>
-        </form>
-
-        <section className="orby-admin-list">
-          <div className="orby-list-header">
-            <h2>Banners cadastrados</h2>
-            <span>{banners.length} banner(s)</span>
+      <main className="orby-admin-page">
+        <section className="orby-admin-header">
+          <div>
+            <h1>Banners</h1>
+            <p>Cadastre e controle os banners da página inicial.</p>
           </div>
+        </section>
 
-          {banners.map((banner) => (
-            <div key={banner.id} className="orby-admin-banner">
-              <img
-                src={banner.image}
-                alt="Banner"
-                loading='lazy'
-                onError={(e) => {
-                  e.target.src = '/placeholder.png'
-                }}
-              />
+        <section className="orby-admin-layout">
+          <form onSubmit={handleSubmit} className="orby-admin-form">
+            <label>Imagem do banner</label>
 
-              <div className="orby-banner-info">
-                <strong>{banner.active ? 'Ativo' : 'Inativo'}</strong>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => setFile(e.target.files[0])}
+              required
+            />
 
-                <div className="admin-actions">
-                  <button onClick={() => toggleActive(banner)}>
-                    {banner.active ? 'Desativar' : 'Ativar'}
-                  </button>
+            <label>Redirecionar para</label>
 
-                  <button onClick={() => handleDelete(banner.id)}>
-                    Excluir
-                  </button>
+            <select
+              value={redirectValue}
+              onChange={(e) => setRedirectValue(e.target.value)}
+            >
+              <option value="">Nenhum redirecionamento</option>
+              <option value="all">Todos os produtos</option>
+              <option value="launch">Lançamentos</option>
+              <option value="bestseller">Mais vendidos</option>
+              <option value="outlet">Outlet</option>
+            </select>
+
+            <button type="submit" disabled={loading}>
+              {loading ? 'Enviando...' : 'Cadastrar banner'}
+            </button>
+          </form>
+
+          <section className="orby-admin-list">
+            <div className="orby-list-header">
+              <h2>Banners cadastrados</h2>
+              <span>{banners.length} banner(s)</span>
+            </div>
+
+            {banners.map((banner) => (
+              <div key={banner.id} className="orby-admin-banner">
+                <img
+                  src={banner.image}
+                  alt="Banner"
+                  loading="lazy"
+                  onError={(e) => {
+                    e.target.src = '/placeholder.png'
+                  }}
+                />
+
+                <div className="orby-banner-info">
+                  <strong>{banner.active ? 'Ativo' : 'Inativo'}</strong>
+                  <span>{getRedirectLabel(banner)}</span>
+
+                  <div className="admin-actions">
+                    <button onClick={() => toggleActive(banner)}>
+                      {banner.active ? 'Desativar' : 'Ativar'}
+                    </button>
+
+                    <button onClick={() => handleDelete(banner.id)}>
+                      Excluir
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </section>
         </section>
-      </section>
 
-      <Toast message={toast.message} type={toast.type} />
-    </main>
+        <Toast message={toast.message} type={toast.type} />
+      </main>
     </>
   )
 }
