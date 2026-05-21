@@ -12,6 +12,19 @@ import SearchPanel from '../components/SearchPanel'
 import useStore from '../hooks/useStore'
 import useStoreTheme from '../hooks/useStoreTheme'
 
+function sortProductsByCategory(products) {
+  return [...products].sort((a, b) => {
+    const categoryA = a.category || 'Sem categoria'
+    const categoryB = b.category || 'Sem categoria'
+
+    if (categoryA !== categoryB) {
+      return categoryA.localeCompare(categoryB, 'pt-BR')
+    }
+
+    return (a.name || '').localeCompare(b.name || '', 'pt-BR')
+  })
+}
+
 function Products() {
   const { cart, addToCart } = useCart()
   const navigate = useNavigate()
@@ -80,8 +93,10 @@ function Products() {
           ...doc.data(),
         }))
 
-        setProducts(data)
-        setFilteredProducts(data)
+        const sortedData = sortProductsByCategory(data)
+
+        setProducts(sortedData)
+        setFilteredProducts(sortedData)
       } catch (error) {
         console.error('Erro ao carregar produtos:', error)
       } finally {
